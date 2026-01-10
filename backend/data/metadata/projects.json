@@ -1,0 +1,13 @@
+{
+  "projects": [
+    {
+      "id": "poc-project-001",
+      "organization_id": "poc-org",
+      "name": "Pinterest",
+      "api_key": "aO4s9yN2O3tScKFP5vJmRede3-fDPLAOCkij8moOODw",
+      "domain": "Home Feed",
+      "created_at": "2026-01-10T21:41:58.345342",
+      "updated_at": "2026-01-10T21:41:58.345490"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+# Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# Data Processing (Python 3.13 compatible)
+duckdb>=1.4.3
+pyarrow>=22.0.0
+pandas>=2.3.3
+
+# Authentication
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+
+# File Operations
+aiofiles==23.2.1
+
+# HTTP Client (for tests)
+httpx==0.25.2
+requests==2.31.0
+
+# Environment Variables
+python-dotenv==1.0.0
+
+# Optional Redis (if using)
+# redis==5.0.1
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+
+# Code Quality
+black==23.11.0
+isort==5.12.0
+mypy==1.7.0
+pylint==3.0.2

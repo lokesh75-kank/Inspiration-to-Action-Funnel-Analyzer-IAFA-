@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - .:/app
+    environment:
+      - DATA_DIR=/app/data
+      - ENVIRONMENT=development
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+    env_file:
+      - .env
+    restart: unless-stopped
+
+  # Optional Redis (if using)
+  # redis:
+  #   image: redis:7
+  #   ports:
+  #     - "6379:6379"
+  #   profiles:
+  #     - redis
