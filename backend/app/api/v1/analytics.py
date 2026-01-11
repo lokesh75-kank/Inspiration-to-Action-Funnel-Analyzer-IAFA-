@@ -199,9 +199,16 @@ async def generate_ai_report(
             format=format_type
         )
         
+        # Check if there's an error in the report response
+        if "error" in report:
+            raise HTTPException(status_code=500, detail=report.get("error", "Failed to generate report"))
+        
         return report
         
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"Error in report endpoint: {error_trace}")
         raise HTTPException(status_code=500, detail=f"Failed to generate report: {str(e)}")

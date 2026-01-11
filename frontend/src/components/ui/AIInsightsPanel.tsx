@@ -6,19 +6,32 @@ interface AIInsights {
   recommendations?: Array<{
     priority: string
     title: string
-    rationale: string
-    expected_impact: string
-    action_items: string[]
+    action?: string
+    impact?: string
+    effort?: string
+    // Legacy fields for backward compatibility
+    rationale?: string
+    expected_impact?: string
+    action_items?: string[]
     estimated_effort?: string
     risk_level?: string
   }>
   guardrails?: Array<{
-    type: string
-    severity: string
-    message: string
     metric?: string
+    threshold?: string
+    why?: string
+    // Legacy fields
+    type?: string
+    severity?: string
+    message?: string
     recommendation?: string
   }>
+  experiment?: {
+    hypothesis: string
+    test: string
+    metric: string
+  }
+  // Legacy experiment format
   experiment_suggestions?: Array<{
     hypothesis: string
     test_design: string
@@ -27,7 +40,7 @@ interface AIInsights {
     duration?: string
     sample_size?: string
   }>
-  summary?: {
+  summary?: string | {
     executive?: string
     technical?: string
   }
@@ -61,7 +74,6 @@ export default function AIInsightsPanel({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [expanded, setExpanded] = useState(true)
-  const [expandedRecommendations, setExpandedRecommendations] = useState<Set<number>>(new Set())
 
   const fetchInsights = async () => {
     setLoading(true)
@@ -99,19 +111,6 @@ export default function AIInsightsPanel({
         return 'bg-blue-100 text-blue-800 border-blue-300'
       default:
         return 'bg-gray-100 text-gray-800 border-gray-300'
-    }
-  }
-
-  const getSeverityColor = (severity: string) => {
-    switch (severity.toLowerCase()) {
-      case 'high':
-        return 'text-red-600'
-      case 'medium':
-        return 'text-yellow-600'
-      case 'low':
-        return 'text-blue-600'
-      default:
-        return 'text-gray-600'
     }
   }
 
@@ -164,14 +163,25 @@ export default function AIInsightsPanel({
 
       {insights && expanded && (
         <div className="space-y-4">
-          {/* Insights */}
+          {/* Summary - Show first for quick overview */}
+          {insights.summary && (
+            <div className="p-3 bg-blue-50 border-l-4 border-blue-500 rounded-r-md">
+              <p className="text-sm text-gray-800 font-medium">
+                {typeof insights.summary === 'string' 
+                  ? insights.summary 
+                  : insights.summary.executive || insights.summary.technical}
+              </p>
+            </div>
+          )}
+
+          {/* Insights - Compact list */}
           {insights.insights && insights.insights.length > 0 && (
             <div>
-              <h3 className="text-md font-semibold text-gray-900 mb-2">💡 Key Insights</h3>
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">💡 Key Insights</h3>
               <ul className="space-y-1">
                 {insights.insights.map((insight, index) => (
                   <li key={index} className="text-sm text-gray-700 flex items-start">
-                    <span className="mr-2">•</span>
+                    <span className="text-[#E60023] mr-2">•</span>
                     <span>{insight}</span>
                   </li>
                 ))}
@@ -179,98 +189,61 @@ export default function AIInsightsPanel({
             </div>
           )}
 
-          {/* Recommendations */}
+          {/* Recommendations - Compact cards */}
           {insights.recommendations && insights.recommendations.length > 0 && (
             <div>
-              <h3 className="text-md font-semibold text-gray-900 mb-3">⭐ Recommendations</h3>
-              <div className="space-y-3">
-                {insights.recommendations.map((rec, index) => {
-                  const isExpanded = expandedRecommendations.has(index)
-                  return (
-                    <div
-                      key={index}
-                      className="p-4 bg-white rounded-lg border border-gray-200"
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <h4 className="font-semibold text-gray-900 flex-1">{rec.title}</h4>
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`px-2 py-1 text-xs font-medium rounded border ${getPriorityColor(rec.priority)}`}
-                          >
-                            {rec.priority} Priority
-                          </span>
-                          <button
-                            onClick={() => {
-                              const newExpanded = new Set(expandedRecommendations)
-                              if (isExpanded) {
-                                newExpanded.delete(index)
-                              } else {
-                                newExpanded.add(index)
-                              }
-                              setExpandedRecommendations(newExpanded)
-                            }}
-                            className="text-xs text-gray-500 hover:text-gray-700"
-                          >
-                            {isExpanded ? '▼' : '▶'}
-                          </button>
-                        </div>
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">⭐ Recommendations</h3>
+              <div className="space-y-2">
+                {insights.recommendations.map((rec, index) => (
+                  <div
+                    key={index}
+                    className="p-3 bg-white rounded-lg border border-gray-200 flex items-start justify-between gap-3"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`px-1.5 py-0.5 text-xs font-medium rounded ${getPriorityColor(rec.priority)}`}>
+                          {rec.priority}
+                        </span>
+                        <span className="font-medium text-gray-900 text-sm truncate">{rec.title}</span>
                       </div>
-                      {isExpanded && (
-                        <>
-                          <p className="text-sm text-gray-700 mb-2">{rec.rationale}</p>
-                          <div className="flex items-center gap-4 text-xs text-gray-600 mb-2 flex-wrap">
-                            {rec.expected_impact && (
-                              <span className="bg-green-50 px-2 py-1 rounded">
-                                <strong>Expected Impact:</strong> {rec.expected_impact}
-                              </span>
-                            )}
-                            {rec.estimated_effort && (
-                              <span><strong>Effort:</strong> {rec.estimated_effort}</span>
-                            )}
-                            {rec.risk_level && (
-                              <span><strong>Risk:</strong> {rec.risk_level}</span>
-                            )}
-                          </div>
-                          {rec.action_items && rec.action_items.length > 0 && (
-                            <div className="mt-2">
-                              <p className="text-xs font-semibold text-gray-600 mb-1">Action Items:</p>
-                              <ul className="list-disc list-inside text-xs text-gray-700 space-y-1">
-                                {rec.action_items.map((item, itemIndex) => (
-                                  <li key={itemIndex}>{item}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                        </>
-                      )}
+                      <p className="text-xs text-gray-600">
+                        {rec.action || rec.rationale}
+                        {(rec.impact || rec.expected_impact) && (
+                          <span className="text-green-600 font-medium ml-1">
+                            → {rec.impact || rec.expected_impact}
+                          </span>
+                        )}
+                      </p>
                     </div>
-                  )
-                })}
+                    {(rec.effort || rec.estimated_effort) && (
+                      <span className="text-xs text-gray-500 whitespace-nowrap">
+                        {rec.effort || rec.estimated_effort}
+                      </span>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           )}
 
-          {/* Guardrails */}
+          {/* Guardrails - Compact warnings */}
           {insights.guardrails && insights.guardrails.length > 0 && (
             <div>
-              <h3 className="text-md font-semibold text-gray-900 mb-2">⚠️ Guardrails</h3>
-              <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">⚠️ Guardrails</h3>
+              <div className="space-y-1">
                 {insights.guardrails.map((guardrail, index) => (
                   <div
                     key={index}
-                    className="p-3 bg-yellow-50 border border-yellow-200 rounded-md"
+                    className="p-2 bg-amber-50 border-l-3 border-amber-400 rounded-r text-sm"
                   >
-                    <div className="flex items-start justify-between mb-1">
-                      <p className="text-sm font-medium text-gray-900">{guardrail.message}</p>
-                      <span className={`text-xs font-medium ${getSeverityColor(guardrail.severity)}`}>
-                        {guardrail.severity} Severity
-                      </span>
-                    </div>
-                    {guardrail.metric && (
-                      <p className="text-xs text-gray-600 mb-1">Metric: {guardrail.metric}</p>
+                    <span className="font-medium text-gray-900">
+                      {guardrail.metric || guardrail.message}
+                    </span>
+                    {guardrail.threshold && (
+                      <span className="text-gray-600 ml-1">— {guardrail.threshold}</span>
                     )}
-                    {guardrail.recommendation && (
-                      <p className="text-xs text-gray-700">{guardrail.recommendation}</p>
+                    {guardrail.why && (
+                      <span className="text-gray-500 text-xs ml-1">({guardrail.why})</span>
                     )}
                   </div>
                 ))}
@@ -278,70 +251,33 @@ export default function AIInsightsPanel({
             </div>
           )}
 
-          {/* Experiment Suggestions */}
-          {insights.experiment_suggestions && insights.experiment_suggestions.length > 0 && (
+          {/* Experiment - Single compact card */}
+          {(insights.experiment || (insights.experiment_suggestions && insights.experiment_suggestions.length > 0)) && (
             <div>
-              <h3 className="text-md font-semibold text-gray-900 mb-3">🧪 Experiment Suggestions</h3>
-              <div className="space-y-3">
-                {insights.experiment_suggestions.map((exp, index) => (
-                  <div
-                    key={index}
-                    className="p-4 bg-purple-50 border border-purple-200 rounded-lg"
-                  >
-                    <h4 className="font-semibold text-gray-900 mb-2">Hypothesis: {exp.hypothesis}</h4>
-                    <div className="space-y-2 text-sm">
-                      <p className="text-gray-700">
-                        <strong>Test Design:</strong> {exp.test_design}
-                      </p>
-                      {exp.success_metrics && exp.success_metrics.length > 0 && (
-                        <div>
-                          <strong className="text-gray-700">Success Metrics:</strong>
-                          <ul className="list-disc list-inside text-gray-600 ml-2">
-                            {exp.success_metrics.map((metric, mIndex) => (
-                              <li key={mIndex}>{metric}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      {exp.expected_outcome && (
-                        <p className="text-gray-700">
-                          <strong>Expected Outcome:</strong> {exp.expected_outcome}
-                        </p>
-                      )}
-                      <div className="flex gap-4 text-xs text-gray-600">
-                        {exp.duration && (
-                          <span><strong>Duration:</strong> {exp.duration}</span>
-                        )}
-                        {exp.sample_size && (
-                          <span><strong>Sample Size:</strong> {exp.sample_size}</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">🧪 Next Experiment</h3>
+              <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg text-sm">
+                {insights.experiment ? (
+                  <>
+                    <p className="text-gray-800"><strong>If</strong> {insights.experiment.hypothesis}</p>
+                    <p className="text-gray-600 text-xs mt-1">
+                      <strong>Test:</strong> {insights.experiment.test} | <strong>Metric:</strong> {insights.experiment.metric}
+                    </p>
+                  </>
+                ) : insights.experiment_suggestions && insights.experiment_suggestions[0] && (
+                  <>
+                    <p className="text-gray-800"><strong>Hypothesis:</strong> {insights.experiment_suggestions[0].hypothesis}</p>
+                    <p className="text-gray-600 text-xs mt-1">
+                      <strong>Test:</strong> {insights.experiment_suggestions[0].test_design}
+                    </p>
+                  </>
+                )}
               </div>
-            </div>
-          )}
-
-          {/* Summary */}
-          {insights.summary && (
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
-              <h3 className="text-md font-semibold text-gray-900 mb-2">📝 Summary</h3>
-              {insights.summary.executive && (
-                <p className="text-sm text-gray-700 mb-2">{insights.summary.executive}</p>
-              )}
-              {insights.summary.technical && (
-                <details className="mt-2">
-                  <summary className="text-xs font-semibold text-gray-600 cursor-pointer">Technical Details</summary>
-                  <p className="text-xs text-gray-600 mt-1">{insights.summary.technical}</p>
-                </details>
-              )}
             </div>
           )}
 
           {insights.generated_at && (
-            <p className="text-xs text-gray-500 text-right">
-              Generated: {new Date(insights.generated_at).toLocaleString()}
+            <p className="text-xs text-gray-400 text-right">
+              {new Date(insights.generated_at).toLocaleTimeString()}
             </p>
           )}
         </div>

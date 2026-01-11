@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { analyticsApi } from '../../services/api'
 
 interface ReportPreviewModalProps {
@@ -36,11 +36,7 @@ export default function ReportPreviewModal({
   const [audience, setAudience] = useState(initialAudience)
   const [format, setFormat] = useState(initialFormat)
 
-  useEffect(() => {
-    if (isOpen && funnelId) {
-      generateReport()
-    }
-  }, [isOpen, funnelId, startDate, endDate, audience, format])
+  // Don't auto-generate on open - wait for user to click "Generate Report"
 
   const generateReport = async () => {
     if (!funnelId || !startDate || !endDate) {
@@ -101,10 +97,7 @@ export default function ReportPreviewModal({
                     setAudience(e.target.value)
                     setReport('')
                     setError(null)
-                    // Regenerate with new audience
-                    setTimeout(() => {
-                      generateReport()
-                    }, 100)
+                    // Don't auto-regenerate, wait for user to click Generate
                   }}
                   className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white"
                 >
@@ -121,10 +114,7 @@ export default function ReportPreviewModal({
                     setFormat(e.target.value)
                     setReport('')
                     setError(null)
-                    // Regenerate with new format
-                    setTimeout(() => {
-                      generateReport()
-                    }, 100)
+                    // Don't auto-regenerate, wait for user to click Generate
                   }}
                   className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white"
                 >
@@ -145,6 +135,36 @@ export default function ReportPreviewModal({
 
         {/* Content */}
         <div className="flex-1 overflow-auto p-6">
+          {!report && !loading && !error && (
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="text-center max-w-md">
+                <div className="text-4xl mb-4">📊</div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Ready to Generate Report</h3>
+                <p className="text-gray-600 mb-6">
+                  Select your audience and format above, then click "Generate Report" to create your AI-powered report.
+                </p>
+                <button
+                  onClick={generateReport}
+                  disabled={loading}
+                  className="px-6 py-3 text-base font-semibold text-white rounded-lg transition-colors disabled:opacity-50"
+                  style={{ backgroundColor: '#E60023' }}
+                  onMouseEnter={(e) => {
+                    if (!e.currentTarget.disabled) {
+                      e.currentTarget.style.backgroundColor = '#BD001F'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!e.currentTarget.disabled) {
+                      e.currentTarget.style.backgroundColor = '#E60023'
+                    }
+                  }}
+                >
+                  Generate Report
+                </button>
+              </div>
+            </div>
+          )}
+
           {loading && (
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
@@ -163,7 +183,12 @@ export default function ReportPreviewModal({
           {report && !loading && (
             <div className="prose max-w-none">
               {format === 'html' ? (
-                <div dangerouslySetInnerHTML={{ __html: report }} />
+                <iframe
+                  srcDoc={report}
+                  className="w-full border-0 rounded-lg"
+                  style={{ minHeight: '600px', height: '100%' }}
+                  title="AI Report Preview"
+                />
               ) : (
                 <pre className="whitespace-pre-wrap font-mono text-sm bg-gray-50 p-4 rounded-lg border border-gray-200">
                   {report}
@@ -175,39 +200,52 @@ export default function ReportPreviewModal({
 
         {/* Footer */}
         <div className="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50">
-          <button
-            onClick={generateReport}
-            disabled={loading}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
-          >
-            {loading ? 'Generating...' : 'Regenerate'}
-          </button>
-          <div className="flex gap-3">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleExport}
-              disabled={!report || loading}
-              className="px-4 py-2 text-sm font-semibold text-white rounded-lg transition-colors disabled:opacity-50"
-              style={{ backgroundColor: '#E60023' }}
-              onMouseEnter={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = '#BD001F'
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = '#E60023'
-                }
-              }}
-            >
-              Export Report
-            </button>
-          </div>
+          {report ? (
+            <>
+              <button
+                onClick={generateReport}
+                disabled={loading}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+              >
+                {loading ? 'Generating...' : 'Regenerate'}
+              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={onClose}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={handleExport}
+                  disabled={!report || loading}
+                  className="px-4 py-2 text-sm font-semibold text-white rounded-lg transition-colors disabled:opacity-50"
+                  style={{ backgroundColor: '#E60023' }}
+                  onMouseEnter={(e) => {
+                    if (!e.currentTarget.disabled) {
+                      e.currentTarget.style.backgroundColor = '#BD001F'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!e.currentTarget.disabled) {
+                      e.currentTarget.style.backgroundColor = '#E60023'
+                    }
+                  }}
+                >
+                  Export Report
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="flex gap-3 w-full justify-end">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

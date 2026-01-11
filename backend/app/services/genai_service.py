@@ -113,85 +113,62 @@ class GenAIService:
         # Format data for prompt
         formatted_data = self._format_funnel_data(analytics_data)
         
-        # Build enhanced prompt with guardrails and experiment suggestions
-        prompt = f"""You are a Product Data Scientist analyzing funnel metrics for Pinterest, an inspiration-to-action platform.
+        # Build concise, actionable prompt
+        prompt = f"""Analyze this Pinterest funnel data. Be CONCISE and ACTIONABLE.
 
-Funnel Metrics:
+DATA:
 {formatted_data}
 
-Business Context:
-- Project: Pinterest
-- Domain: Home Feed
-- Focus: Inspiration-to-action journey analysis
-
-Provide a comprehensive analysis in JSON format with the following structure:
+Return JSON with this EXACT structure:
 
 {{
   "insights": [
-    "3-5 key findings about the funnel performance, patterns, anomalies, and trends. Include segment comparisons, drop-off analysis, and trend identification."
+    "Max 4 insights. Each = 1 sentence with a NUMBER. Example: 'Save stage has 49% drop-off, highest in funnel'"
   ],
   "recommendations": [
     {{
-      "priority": "High/Medium/Low",
-      "title": "Clear, actionable title",
-      "rationale": "Data-driven explanation with specific metrics",
-      "expected_impact": "Quantified estimate (e.g., +15% click-through, +5% overall conversion)",
-      "action_items": ["2-3 specific next steps"],
-      "estimated_effort": "Low/Medium/High",
-      "risk_level": "Low/Medium/High"
+      "priority": "High",
+      "title": "5 words max - verb first",
+      "action": "One specific action to take",
+      "impact": "+X% metric (be specific)",
+      "effort": "Low/Med/High"
     }}
   ],
   "guardrails": [
     {{
-      "type": "warning/trend",
-      "severity": "Low/Medium/High",
-      "message": "Warning message about potential negative impacts",
-      "metric": "Relevant metric being monitored",
-      "recommendation": "What to monitor or do to prevent negative impact"
+      "metric": "What to protect",
+      "threshold": "Alert if X drops below Y%",
+      "why": "One sentence risk"
     }}
   ],
-  "experiment_suggestions": [
-    {{
-      "hypothesis": "Testable hypothesis statement",
-      "test_design": "A/B test description: Control vs Treatment",
-      "success_metrics": ["Primary metric", "Secondary metrics"],
-      "expected_outcome": "Expected result (e.g., +15% click-through, +8% conversion)",
-      "duration": "Recommended duration (e.g., 2 weeks)",
-      "sample_size": "Recommended sample size (e.g., 10,000 users per variant)"
-    }}
-  ],
-  "summary": {{
-    "executive": "2-3 sentence executive summary for leadership",
-    "technical": "Detailed technical summary for data scientists with specific metrics and patterns"
-  }}
+  "experiment": {{
+    "hypothesis": "If [change] then [outcome] by [amount]",
+    "test": "Control: X, Treatment: Y",
+    "metric": "Primary success metric"
+  }},
+  "summary": "2 sentences max: biggest problem + top action"
 }}
 
-Focus Areas:
-1. **Segment Analysis**: Compare segments (Planner vs Actor, New vs Retained) and identify optimization opportunities
-2. **Bottleneck Identification**: Identify stages with highest drop-off rates and suggest interventions
-3. **Guardrail Monitoring**: Identify potential negative impacts (e.g., one segment benefiting at another's expense, content diversity decline)
-4. **Experiment Design**: Suggest testable hypotheses with clear experiment designs
-5. **Risk Assessment**: Evaluate trade-offs and long-term health concerns
-6. **Pinterest Context**: Consider inspiration quality, intent formation, and long-term user value
+RULES:
+- Max 4 insights (1 sentence each, must include numbers)
+- Max 3 recommendations (verb-first titles)
+- Max 2 guardrails
+- 1 experiment suggestion
+- Every claim needs data
+- No filler words
 
-Guardrail Checks:
-- Monitor if optimizations hurt other segments
-- Watch for content diversity decline
-- Check for save rate degradation
-- Ensure no negative impact on user trust
-
-Be data-driven, specific, and actionable. Format as valid JSON only."""
+JSON only:"""
 
         try:
-            # Call OpenAI API
+            # Call OpenAI API with concise settings
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
-                    {"role": "system", "content": "You are a Product Data Scientist specializing in funnel analysis and optimization for Pinterest."},
+                    {"role": "system", "content": "You generate ultra-concise analytics insights. Rules: max 4 insights, max 3 recommendations, every point has a number, no filler words. Return valid JSON only."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.7,
-                max_tokens=2000
+                temperature=0.3,  # Low temp for focused, consistent output
+                max_tokens=1000   # Reduced for conciseness
             )
             
             # Parse response
@@ -267,429 +244,344 @@ Be data-driven, specific, and actionable. Format as valid JSON only."""
         # Format data for report prompt
         formatted_data = self._format_funnel_data(analytics_data)
         
-        # Audience-specific context
+        # Audience-specific context - all optimized for conciseness
         audience_contexts = {
             "executive": {
-                "tone": "concise, strategic, business-focused",
-                "focus": "high-level metrics, business impact, strategic recommendations",
-                "length": "brief (2-3 pages)",
-                "sections": "Executive Summary, Key Metrics, Strategic Recommendations, Next Steps"
+                "tone": "ultra-concise, strategic, bottom-line focused",
+                "focus": "3-5 key metrics, business impact, 2-3 action items",
+                "length": "1 page max - bullet points only",
+                "sections": "Summary (3 bullets), Key Numbers, Recommendations (2-3)"
             },
             "product_manager": {
-                "tone": "actionable, feature-focused, user-centric",
-                "focus": "actionable insights, feature recommendations, user behavior patterns",
-                "length": "moderate (3-5 pages)",
-                "sections": "Executive Summary, Key Insights, Feature Recommendations, Action Items, Experiment Suggestions"
+                "tone": "actionable, concise, decision-focused",
+                "focus": "top insights, specific actions, next experiment",
+                "length": "1-2 pages - bullet points preferred",
+                "sections": "Summary, Key Insights (5 max), Actions (3 max), Next Experiment"
             },
             "data_scientist": {
-                "tone": "detailed, analytical, technical",
-                "focus": "detailed metrics, statistical insights, experiment design, causal analysis",
-                "length": "comprehensive (5-8 pages)",
-                "sections": "Executive Summary, Technical Summary, Detailed Metrics, Segment Analysis, Insights, Recommendations, Experiment Suggestions, Guardrails"
+                "tone": "precise, data-driven, concise",
+                "focus": "key metrics with numbers, statistical findings, experiment design",
+                "length": "2 pages max - tables and bullets",
+                "sections": "Summary, Metrics Table, Key Findings (5 max), Experiment Suggestion, Guardrails"
             }
         }
         
         context = audience_contexts.get(audience, audience_contexts["data_scientist"])
         
-        # Build report prompt with Pinterest-themed HTML template
-        if format == "html":
-            html_template = """
+        # Define HTML template (used if format is HTML) - Based on standard export styling
+        html_template = """
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>IAFA Report - {funnel_name}</title>
+  <title>IAFA Executive Report - __FUNNEL_NAME__</title>
   <style>
-    * {{
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }}
-    body {{
+    body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       line-height: 1.6;
-      color: #111827;
-      background: linear-gradient(to bottom, #FAFAFA 0%, #FFFFFF 100%);
-      padding: 40px 20px;
-    }}
-    .container {{
-      max-width: 1000px;
+      color: #333;
+      max-width: 1200px;
       margin: 0 auto;
+      padding: 40px 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
       background: white;
-      border-radius: 16px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.07), 0 10px 20px rgba(0,0,0,0.05);
-      overflow: hidden;
-    }}
-    .header {{
-      background: linear-gradient(135deg, #E60023 0%, #BD001F 100%);
-      color: white;
-      padding: 50px 40px;
-      text-align: center;
-    }}
-    .header h1 {{
-      font-size: 2.5em;
-      font-weight: 700;
-      margin-bottom: 10px;
-      letter-spacing: -0.5px;
-    }}
-    .header p {{
-      font-size: 1.1em;
-      opacity: 0.95;
-      font-weight: 300;
-    }}
-    .content {{
-      padding: 50px 40px;
-    }}
-    .section {{
-      margin-bottom: 50px;
-    }}
-    .section:last-child {{
-      margin-bottom: 0;
-    }}
-    h2 {{
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
       color: #E60023;
-      font-size: 1.8em;
-      font-weight: 700;
-      margin-bottom: 20px;
-      padding-bottom: 10px;
       border-bottom: 3px solid #E60023;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }}
-    h2::before {{
-      content: '';
-      width: 4px;
-      height: 24px;
-      background: #E60023;
-      border-radius: 2px;
-    }}
-    h3 {{
+      padding-bottom: 10px;
+      margin-bottom: 30px;
+    }
+    h2 {
       color: #111827;
-      font-size: 1.3em;
-      font-weight: 600;
       margin-top: 30px;
       margin-bottom: 15px;
-    }}
-    .summary-box {{
-      background: linear-gradient(135deg, #FEF2F2 0%, #FEFEFE 100%);
+      font-size: 1.5em;
+    }
+    h3 {
+      color: #111827;
+      margin-top: 20px;
+      margin-bottom: 10px;
+      font-size: 1.2em;
+    }
+    .summary {
+      background: #f9fafb;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
       border-left: 4px solid #E60023;
-      border-radius: 12px;
-      padding: 25px;
-      margin: 20px 0;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }}
-    .metric-grid {{
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-      margin: 25px 0;
-    }}
-    .metric-card {{
-      background: #FAFAFA;
-      border-radius: 12px;
-      padding: 20px;
-      text-align: center;
-      border: 1px solid #E5E7EB;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }}
-    .metric-card:hover {{
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(230,0,35,0.1);
-    }}
-    .metric-value {{
-      font-size: 2em;
-      font-weight: 700;
-      color: #E60023;
-      margin-bottom: 5px;
-    }}
-    .metric-label {{
-      font-size: 0.9em;
-      color: #6B7280;
-      font-weight: 500;
-    }}
-    .insight-item {{
-      background: #EFF6FF;
-      border-left: 4px solid #3B82F6;
-      border-radius: 8px;
-      padding: 20px;
-      margin: 15px 0;
-    }}
-    .recommendation-card {{
-      background: white;
-      border: 2px solid #E5E7EB;
-      border-radius: 12px;
-      padding: 25px;
-      margin: 20px 0;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }}
-    .recommendation-card.high-priority {{
-      border-color: #E60023;
-      background: linear-gradient(135deg, #FEF2F2 0%, #FFFFFF 100%);
-    }}
-    .recommendation-card.medium-priority {{
-      border-color: #F59E0B;
-      background: linear-gradient(135deg, #FFFBEB 0%, #FFFFFF 100%);
-    }}
-    .priority-badge {{
-      display: inline-block;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 0.85em;
+    }
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .summary-item:last-child {
+      border-bottom: none;
+    }
+    .summary-label {
       font-weight: 600;
-      margin-bottom: 15px;
-    }}
-    .priority-badge.high {{
-      background: #FEE2E2;
-      color: #991B1B;
-    }}
-    .priority-badge.medium {{
-      background: #FEF3C7;
-      color: #92400E;
-    }}
-    .priority-badge.low {{
-      background: #D1FAE5;
-      color: #065F46;
-    }}
-    .action-item {{
-      background: #F9FAFB;
-      border-radius: 8px;
-      padding: 15px;
-      margin: 10px 0;
-      border-left: 3px solid #E60023;
-    }}
-    .experiment-box {{
-      background: linear-gradient(135deg, #F3E8FF 0%, #FAF5FF 100%);
-      border: 2px solid #A78BFA;
-      border-radius: 12px;
-      padding: 25px;
-      margin: 20px 0;
-    }}
-    .guardrail-box {{
-      background: linear-gradient(135deg, #FEF3C7 0%, #FFFBEB 100%);
-      border: 2px solid #F59E0B;
-      border-radius: 12px;
-      padding: 25px;
-      margin: 20px 0;
-    }}
-    ul, ol {{
-      margin: 15px 0;
-      padding-left: 25px;
-    }}
-    li {{
-      margin: 8px 0;
-      line-height: 1.7;
-    }}
-    p {{
-      margin: 15px 0;
-      line-height: 1.8;
-    }}
-    .footer {{
-      background: #F9FAFB;
-      padding: 30px 40px;
-      text-align: center;
-      color: #6B7280;
-      font-size: 0.9em;
-      border-top: 1px solid #E5E7EB;
-    }}
-    .footer strong {{
-      color: #E60023;
-    }}
-    table {{
+      color: #6b7280;
+    }
+    .summary-value {
+      font-weight: 700;
+      color: #111827;
+      font-size: 1.1em;
+    }
+    table {
       width: 100%;
       border-collapse: collapse;
-      margin: 25px 0;
-      background: white;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }}
-    th {{
-      background: #E60023;
-      color: white;
-      padding: 15px;
+      margin: 20px 0;
+    }
+    th {
+      background: #f9fafb;
+      padding: 12px;
       text-align: left;
       font-weight: 600;
-    }}
-    td {{
+      color: #374151;
+      border-bottom: 2px solid #e5e7eb;
+    }
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    tr:hover {
+      background: #f9fafb;
+    }
+    .insights {
+      background: #eff6ff;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+      border-left: 4px solid #3b82f6;
+    }
+    .insights ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .insights li {
+      margin: 8px 0;
+    }
+    .recommendations {
+      background: #fef2f2;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+      border-left: 4px solid #E60023;
+    }
+    .recommendation-item {
+      background: white;
       padding: 15px;
-      border-bottom: 1px solid #E5E7EB;
-    }}
-    tr:hover {{
-      background: #FAFAFA;
-    }}
-    .highlight {{
-      background: #FEF2F2;
+      margin: 10px 0;
+      border-radius: 6px;
+      border-left: 3px solid #E60023;
+    }
+    .experiments {
+      background: #f3e8ff;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+      border-left: 4px solid #a78bfa;
+    }
+    .guardrails {
+      background: #fef3c7;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+      border-left: 4px solid #f59e0b;
+    }
+    ul, ol {
+      margin: 15px 0;
+      padding-left: 20px;
+    }
+    li {
+      margin: 8px 0;
+    }
+    p {
+      margin: 15px 0;
+      line-height: 1.8;
+    }
+    .footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+      color: #6b7280;
+      font-size: 0.9em;
+      text-align: center;
+    }
+    strong {
+      color: #111827;
+      font-weight: 600;
+    }
+    .highlight {
+      background: #fef2f2;
       padding: 2px 6px;
       border-radius: 4px;
       color: #E60023;
       font-weight: 600;
-    }}
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <h1>📊 IAFA Journey Report</h1>
-      <p>{funnel_name} • {start_date} to {end_date}</p>
+    <h1>Inspiration-to-Action Funnel Analyzer (IAFA)</h1>
+    <h2>AI-Powered __REPORT_TYPE__ Report</h2>
+    
+    <div style="margin-bottom: 30px;">
+      <p><strong>Journey:</strong> __FUNNEL_NAME__</p>
+      <p><strong>Date Range:</strong> __START_DATE__ to __END_DATE__</p>
+      <p><strong>Audience:</strong> __AUDIENCE_DISPLAY__</p>
     </div>
+    
     <div class="content">
-      {report_content}
+      __REPORT_CONTENT__
     </div>
+    
     <div class="footer">
-      <p><strong>Inspiration-to-Action Funnel Analyzer (IAFA)</strong></p>
-      <p>Generated on {generated_at} • Powered by AI Insights</p>
+      <p>Report Generated: __GENERATED_AT__</p>
+      <p>Inspiration-to-Action Funnel Analyzer (IAFA)</p>
     </div>
   </div>
 </body>
 </html>
 """
-            
-            prompt = f"""You are a Product Data Scientist creating a beautifully styled HTML report for Pinterest with Pinterest-themed design.
+        
+        # Build report prompt
+        if format == "html":
+            prompt = f"""You are a Product Data Scientist creating a CONCISE HTML report for {audience.replace('_', ' ').title()}.
 
-Funnel Metrics:
+DATA:
 {formatted_data}
 
-AI-Generated Insights & Recommendations:
+INSIGHTS:
 {json.dumps(recommendations, indent=2)}
 
-Audience Context:
+REQUIREMENTS:
 - Tone: {context['tone']}
 - Focus: {context['focus']}
 - Length: {context['length']}
 - Sections: {context['sections']}
 
-Generate a comprehensive HTML report with Pinterest-themed styling. Use the following HTML structure and CSS classes:
+CRITICAL RULES FOR CONCISENESS:
+1. Use BULLET POINTS, not paragraphs
+2. Each insight = 1 sentence max
+3. Each recommendation = action + expected impact (1 line)
+4. No filler words, no repetition
+5. Numbers are mandatory - every claim needs data
+6. Max 3-5 bullets per section
+7. Total report should fit on 1-2 printed pages
 
-1. **Executive Summary** - Use `<div class="summary-box">` for the summary section
-   - High-level overview of journey performance
-   - Key findings and business impact
-   - Top recommendations
+Use these CSS classes for sections:
 
-2. **Key Metrics** - Use `<div class="metric-grid">` with `<div class="metric-card">` for each metric
-   - Total users exposed (use `<span class="metric-value">` for numbers)
-   - Overall progression rate
-   - Stage-by-stage breakdown (use a table with proper styling)
-   - Segment comparisons (if applicable)
+<div class="summary">
+  <h2>Summary</h2>
+  <ul>
+    <li><strong>Key Finding:</strong> One sentence with number</li>
+  </ul>
+</div>
 
-3. **Insights** - Use `<div class="insight-item">` for each insight
-   - Key patterns and trends
-   - Segment differences
-   - Bottleneck identification
+<div class="insights">
+  <h2>Key Insights</h2>
+  <ul>
+    <li>Insight with specific number</li>
+  </ul>
+</div>
 
-4. **Recommendations** - Use `<div class="recommendation-card high-priority">` or `medium-priority` or `low-priority`
-   - Add `<span class="priority-badge high">High Priority</span>` for priority badges
-   - High-priority actions
-   - Expected impact
-   - Implementation steps (use `<div class="action-item">` for each action)
+<div class="recommendations">
+  <h2>Recommendations</h2>
+  <ul>
+    <li><strong>Action:</strong> What to do → Expected impact</li>
+  </ul>
+</div>
 
-5. **Experiment Suggestions** - Use `<div class="experiment-box">` for each experiment
-   - Testable hypotheses
-   - Experiment designs
-   - Success metrics
+<div class="experiments">
+  <h2>Next Experiment</h2>
+  <p><strong>Hypothesis:</strong> If X then Y</p>
+  <p><strong>Metric:</strong> What to measure</p>
+</div>
 
-6. **Guardrails & Risks** - Use `<div class="guardrail-box">` for guardrails
-   - Potential negative impacts
-   - Metrics to monitor
-   - Risk mitigation
+<div class="guardrails">
+  <h2>Guardrails</h2>
+  <ul>
+    <li>What NOT to break</li>
+  </ul>
+</div>
 
-7. **Next Steps** - Use `<div class="action-item">` for each action item
-   - Immediate actions
-   - Follow-up analysis
-   - Timeline suggestions
-
-HTML Structure Requirements:
-- Use proper HTML5 semantic tags
-- Use `<h2>` for main section headers (they will be styled with Pinterest red)
-- Use `<h3>` for subsections
-- Use the provided CSS classes for styling
-- Include data-driven evidence for all claims
-- Make it visually appealing with proper spacing
-- Use tables for metric comparisons
-- Use `<span class="highlight">` to highlight important numbers or metrics
-- Be specific and actionable
-
-Generate ONLY the content that goes inside `<div class="content">` (the {report_content} placeholder). Do NOT include the full HTML template, just the content sections with proper HTML tags and classes.
-
-Format your response as clean HTML that will be inserted into the template:"""
+Generate ONLY the HTML content. Be extremely concise - every word must add value:"""
         else:
-            # For markdown and text, use simpler formatting
-            prompt = f"""You are a Product Data Scientist creating a {format.upper()} report for {audience.replace('_', ' ').title()} audience.
+            # For markdown and text - concise formatting
+            prompt = f"""Create a CONCISE {format.upper()} report for {audience.replace('_', ' ').title()}.
 
-Funnel Metrics:
+DATA:
 {formatted_data}
 
-AI-Generated Insights & Recommendations:
+INSIGHTS:
 {json.dumps(recommendations, indent=2)}
 
-Audience Context:
-- Tone: {context['tone']}
-- Focus: {context['focus']}
-- Length: {context['length']}
+REQUIREMENTS:
+- {context['tone']}
+- {context['length']}
 - Sections: {context['sections']}
 
-Generate a comprehensive {format.upper()} report with the following structure:
+STRUCTURE (use bullet points, max 3-5 per section):
 
-1. **Executive Summary** (2-3 paragraphs)
-   - High-level overview of journey performance
-   - Key findings and business impact
-   - Top recommendations
+## Summary
+- Key finding 1 with number
+- Key finding 2 with number
+- Top recommendation
 
-2. **Key Metrics** (with context)
-   - Total users exposed
-   - Overall progression rate
-   - Stage-by-stage breakdown
-   - Segment comparisons (if applicable)
+## Key Metrics
+| Metric | Value |
+|--------|-------|
+| Total Users | X |
+| Progression Rate | X% |
 
-3. **Insights** (from AI analysis)
-   - Key patterns and trends
-   - Segment differences
-   - Bottleneck identification
+## Insights (max 5)
+- Insight with specific data point
 
-4. **Recommendations** (prioritized)
-   - High-priority actions
-   - Expected impact
-   - Implementation steps
+## Recommendations (max 3)
+1. **Action** → Expected impact
 
-5. **Experiment Suggestions** (if applicable)
-   - Testable hypotheses
-   - Experiment designs
-   - Success metrics
+## Next Experiment
+- Hypothesis: If X then Y
+- Primary metric: Z
 
-6. **Guardrails & Risks** (if applicable)
-   - Potential negative impacts
-   - Metrics to monitor
-   - Risk mitigation
+## Guardrails
+- Metric to protect
 
-7. **Next Steps** (action items)
-   - Immediate actions
-   - Follow-up analysis
-   - Timeline suggestions
+RULES:
+- Every bullet = 1 sentence max
+- Every claim needs a number
+- No filler words
+- Total: 1-2 pages max
 
-Format Requirements:
-- Use proper {format.upper()} formatting
-- Include clear section headers
-- Use bullet points and numbered lists where appropriate
-- Make it scannable and easy to read
-- Include data-driven evidence for all claims
-- Be specific and actionable
-
-Generate the complete report now:"""
+Generate now:"""
 
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
-                    {"role": "system", "content": f"You are an expert at creating {format.upper()} reports for data science and product analytics. Create clear, professional, and actionable reports."},
+                    {"role": "system", "content": f"You create ultra-concise {format.upper()} reports. Rules: bullet points only, 1 sentence per bullet, every claim needs data, no filler words, max 1-2 pages. Be direct and actionable."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.7,
-                max_tokens=4000
+                temperature=0.5,  # Lower temperature for more focused output
+                max_tokens=2000   # Reduced to encourage conciseness
             )
             
-            report_content = response.choices[0].message.content.strip()
+            # Initialize report_content
+            report_content = ""
+            if response.choices and len(response.choices) > 0 and response.choices[0].message:
+                report_content = response.choices[0].message.content.strip()
+            else:
+                raise ValueError("Empty response from OpenAI API")
             
-            # For HTML format, wrap content in Pinterest-themed template
+            # For HTML format, wrap content in template
             if format == "html":
                 # Extract HTML content (remove any markdown code blocks if present)
                 if "```html" in report_content:
@@ -697,17 +589,162 @@ Generate the complete report now:"""
                 elif "```" in report_content:
                     report_content = report_content.split("```")[1].split("```")[0].strip()
                 
+                # If AI generated plain text or markdown, convert it to HTML with proper CSS classes
+                # Check if content already has styled HTML with our CSS classes
+                has_styled_html = ("class=\"summary\"" in report_content or "class=\"insights\"" in report_content or 
+                                  "class=\"recommendations\"" in report_content or "class=\"experiments\"" in report_content or
+                                  "class=\"guardrails\"" in report_content)
+                
+                if not has_styled_html:
+                    # Convert plain text/markdown to HTML with proper structure and CSS classes
+                    lines = report_content.split('\n')
+                    html_sections = []
+                    current_section = None
+                    current_list = None
+                    in_paragraph = False
+                    
+                    for line in lines:
+                        original_line = line
+                        line = line.strip()
+                        if not line:
+                            if current_list:
+                                html_sections.append('</ul>')
+                                current_list = None
+                            if in_paragraph:
+                                html_sections.append('</p>')
+                                in_paragraph = False
+                            continue
+                        
+                        # Section headers (## Header)
+                        if line.startswith('## '):
+                            if current_list:
+                                html_sections.append('</ul>')
+                                current_list = None
+                            if in_paragraph:
+                                html_sections.append('</p>')
+                                in_paragraph = False
+                            if current_section:
+                                html_sections.append('</div>')
+                            
+                            section_title = line[3:].strip()
+                            # Determine section class based on title keywords
+                            title_lower = section_title.lower()
+                            if 'summary' in title_lower or 'executive' in title_lower:
+                                current_section = 'summary'
+                            elif 'insight' in title_lower:
+                                current_section = 'insights'
+                            elif 'recommendation' in title_lower:
+                                current_section = 'recommendations'
+                            elif 'experiment' in title_lower or 'suggestion' in title_lower:
+                                current_section = 'experiments'
+                            elif 'guardrail' in title_lower or 'risk' in title_lower:
+                                current_section = 'guardrails'
+                            else:
+                                # Default - no special styling
+                                current_section = None
+                            
+                            if current_section:
+                                html_sections.append(f'<div class="{current_section}">')
+                                html_sections.append(f'<h2>{section_title}</h2>')
+                            else:
+                                html_sections.append(f'<h2>{section_title}</h2>')
+                                
+                        # Subsection headers (### Subheader)
+                        elif line.startswith('### '):
+                            if current_list:
+                                html_sections.append('</ul>')
+                                current_list = None
+                            if in_paragraph:
+                                html_sections.append('</p>')
+                                in_paragraph = False
+                            html_sections.append(f'<h3>{line[4:]}</h3>')
+                        # Bold text (might be markdown **text**)
+                        elif line.startswith('**') and line.endswith('**'):
+                            if current_list:
+                                html_sections.append('</ul>')
+                                current_list = None
+                            text = line.replace('**', '').strip()
+                            if not in_paragraph:
+                                html_sections.append('<p>')
+                                in_paragraph = True
+                            html_sections[-1] = html_sections[-1] + f'<strong>{text}</strong>'
+                        # Lists (- item or * item or numbered)
+                        elif line.startswith('- ') or line.startswith('* ') or (len(line) > 2 and line[0].isdigit() and line[1] == '.'):
+                            if in_paragraph:
+                                html_sections.append('</p>')
+                                in_paragraph = False
+                            if not current_list:
+                                # Determine if numbered or bulleted
+                                if line[0].isdigit():
+                                    html_sections.append('<ol>')
+                                else:
+                                    html_sections.append('<ul>')
+                                current_list = True
+                            
+                            # Remove list markers
+                            list_item = line
+                            if line.startswith('- ') or line.startswith('* '):
+                                list_item = line[2:].strip()
+                            elif line[0].isdigit() and '. ' in line:
+                                list_item = line.split('. ', 1)[1].strip()
+                            
+                            html_sections.append(f'<li>{list_item}</li>')
+                        # Regular paragraphs
+                        else:
+                            if current_list:
+                                # Check if we have <ol> or <ul>
+                                if any('</ol>' in s for s in html_sections[-5:]):
+                                    html_sections.append('</ol>')
+                                else:
+                                    html_sections.append('</ul>')
+                                current_list = None
+                            
+                            # Check if this should start a new paragraph or continue existing
+                            if not in_paragraph:
+                                html_sections.append(f'<p>{line}')
+                                in_paragraph = True
+                            else:
+                                # Continue existing paragraph with a space
+                                html_sections[-1] = html_sections[-1] + ' ' + line
+                    
+                    # Close any open tags
+                    if current_list:
+                        html_sections.append('</ul>')
+                    if in_paragraph:
+                        html_sections.append('</p>')
+                    if current_section:
+                        html_sections.append('</div>')
+                    
+                    report_content = '\n'.join(html_sections)
+                
                 # Format the HTML template with actual values
                 from datetime import datetime as dt
                 generated_at = dt.now().strftime("%B %d, %Y at %I:%M %p")
+                funnel_name = analytics_data.get('funnel_name', 'Unknown Journey')
                 
-                full_html = html_template.format(
-                    funnel_name=analytics_data.get('funnel_name', 'Unknown Journey'),
-                    start_date=start_date,
-                    end_date=end_date,
-                    report_content=report_content,
-                    generated_at=generated_at
-                )
+                # Audience-specific report type labels
+                report_type_map = {
+                    "data_scientist": "Technical Analysis",
+                    "executive": "Executive Summary",
+                    "product_manager": "Product Insights"
+                }
+                audience_display_map = {
+                    "data_scientist": "Data Scientist",
+                    "executive": "Executive",
+                    "product_manager": "Product Manager"
+                }
+                report_type = report_type_map.get(audience, "Analytics")
+                audience_display = audience_display_map.get(audience, audience.replace('_', ' ').title())
+                
+                # Replace placeholders using __ delimiters to avoid conflicts with CSS braces
+                full_html = html_template.replace('__FUNNEL_NAME__', funnel_name)
+                full_html = full_html.replace('__START_DATE__', start_date)
+                full_html = full_html.replace('__END_DATE__', end_date)
+                full_html = full_html.replace('__REPORT_TYPE__', report_type)
+                full_html = full_html.replace('__AUDIENCE_DISPLAY__', audience_display)
+                full_html = full_html.replace('__REPORT_CONTENT__', report_content)
+                full_html = full_html.replace('__GENERATED_AT__', generated_at)
+                
                 report_content = full_html
             
             return {
@@ -719,8 +756,12 @@ Generate the complete report now:"""
             }
             
         except Exception as e:
+            import traceback
+            error_trace = traceback.format_exc()
+            print(f"Error generating report: {error_trace}")
             return {
                 "error": f"Failed to generate report: {str(e)}",
                 "report": "",
-                "format": format
+                "format": format,
+                "traceback": error_trace
             }
