@@ -1,71 +1,190 @@
-# IAFA - Inspiration-to-Action Funnel Analyzer
+# Inspiration-to-Action Funnel Analyzer (IAFA)
 
-**🎯 Complete User Guide**: See [USER_GUIDE.md](./USER_GUIDE.md) for step-by-step instructions on how to use the tool.
+**A Pinterest-inspired analytics tool for Product Data Scientists to measure inspiration-to-action journeys**
 
---- (POC)
+---
 
-**Proof of Concept** for data science demonstration - Parquet-based funnel analytics.
+## 🎯 What is IAFA?
 
-**Note**: This is a POC for localhost only. No authentication required. Perfect for demonstrating data science capabilities.
+IAFA helps Product Data Scientists analyze multi-stage user journeys from inspiration to action, with segment-aware analytics and leadership-ready reporting.
+
+### Key Features
+- 📊 **Journey Analytics**: Stage-by-stage progression analysis
+- 🎯 **Segment Analysis**: Break down by user intent, tenure, surface, content category
+- 📈 **Visual Charts**: Interactive bar charts for journey and segment comparison
+- 📄 **Report Export**: Generate HTML, CSV, or Text reports for leadership
+- 🔍 **Multi-Stage Tracking**: Analyze complex user journeys (up to 5 stages)
+- 💡 **Pinterest-Themed UI**: Clean, professional interface
+
+---
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- Python 3.11+
-- Node.js 18+
-- Docker & Docker Compose (optional)
+### Local Setup (5 minutes)
 
-### Backend Setup
+**Prerequisites**: Python 3.11+, Node.js 18+
 
 ```bash
+# 1. Clone repository
+git clone https://github.com/lokesh75-kank/Inspiration-to-Action-Funnel-Analyzer-IAFA-.git
+cd "Inspiration-to-Action-Funnel-Analyzer-IAFA-"
+
+# 2. Setup Backend
 cd backend
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
-# No .env needed for POC - uses defaults
-mkdir -p data/{events,metadata,config}
+python populate_sample_data.py
 uvicorn app.main:app --reload --port 8000
-```
 
-### Frontend Setup (Optional)
-
-```bash
+# 3. Setup Frontend (new terminal)
 cd frontend
 npm install
-# VITE_API_URL defaults to http://localhost:8000/api/v1
 npm run dev
 ```
 
-**Note**: For POC, you can use the API directly at http://localhost:8000/docs without frontend.
+**Open browser**: `http://localhost:5173` ✨
 
-### Docker Setup
+📖 **Full Setup Instructions**: See [QUICK_START.md](./QUICK_START.md)
 
-```bash
-docker-compose up --build
-```
+---
+
+## ☁️ Free Cloud Deployment
+
+Deploy for free and share with others:
+
+- **Render.com** (Recommended): See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
+- **Railway.app**: See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
+- **Vercel + Railway**: See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
+
+All options include free tiers perfect for demos and portfolios!
+
+---
 
 ## 📚 Documentation
 
-See [documents/README.md](./documents/README.md) for complete documentation.
+- **Quick Start**: [QUICK_START.md](./QUICK_START.md) - Get running in 5 minutes
+- **Deployment Guide**: [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - Deploy to cloud for free
+- **User Guide**: [documents/05-product/USER_GUIDE.md](./documents/05-product/USER_GUIDE.md) - Complete user documentation
+- **Demo Guide**: [LIVE_DEMO_GUIDE.md](./LIVE_DEMO_GUIDE.md) - Step-by-step demo script
+- **GenAI Strategy**: [documents/06-genai/GENAI_RECOMMENDATIONS_STRATEGY.md](./documents/06-genai/GENAI_RECOMMENDATIONS_STRATEGY.md) - AI-powered recommendations (future)
 
-- **Business**: [Product Vision](./documents/01-business/01-Product-Vision-Strategy.md)
-- **Data Science**: [Data Strategy](./documents/02-data-science/01-Data-Strategy-Architecture.md)
-- **Development**: [Technical Implementation Plan](./documents/03-development/IAFA_Technical_Implementation_Plan_MVP.md)
+---
 
-## 🏗️ Project Structure
+## 🎯 Use Cases
+
+### For Product Data Scientists
+- Analyze user journey progression rates
+- Compare segment performance (Planner vs Actor, New vs Retained)
+- Identify drop-off points and optimization opportunities
+- Generate leadership-ready reports
+
+### For Leadership
+- Executive dashboard view
+- Export reports for presentations
+- Segment-aware insights
+- Data-driven decision making
+
+---
+
+## 🏗️ Architecture
+
+- **Backend**: FastAPI (Python) with DuckDB + Parquet for analytics
+- **Frontend**: React + TypeScript + Vite
+- **Charts**: Recharts
+- **Storage**: Parquet files (columnar format) for efficient analytics
+- **Styling**: Tailwind CSS with Pinterest theme
+
+---
+
+## 📦 Project Structure
 
 ```
 .
-├── backend/           # FastAPI backend
-│   ├── app/          # Application code
-│   ├── data/         # Parquet files and metadata
-│   └── tests/        # Test files
-├── frontend/         # React frontend
-│   ├── src/          # Source code
-│   └── public/       # Static files
-├── documents/        # Documentation
-└── docker-compose.yml
+├── backend/              # FastAPI backend
+│   ├── app/
+│   │   ├── api/v1/      # API endpoints
+│   │   ├── services/    # Business logic
+│   │   ├── storage/     # Data storage (Parquet, DuckDB)
+│   │   └── main.py      # FastAPI app
+│   └── populate_sample_data.py  # Pre-populate demo data
+│
+├── frontend/            # React frontend
+│   ├── src/
+│   │   ├── components/  # UI components
+│   │   ├── pages/       # Page components
+│   │   ├── services/    # API clients
+│   │   └── utils/       # Utilities (report generator)
+│   └── package.json
+│
+└── documents/           # Documentation
+    ├── 05-product/      # User guides
+    └── 06-genai/        # GenAI strategy
 ```
+
+---
+
+## 🎨 Features in Detail
+
+### Journey Analytics
+- Multi-stage funnel visualization
+- Conversion rate calculation
+- Drop-off analysis
+- Date range filtering
+
+### Segment Analysis
+- Filter by: User Intent, User Tenure, Surface, Content Category
+- Break down by: Any segment dimension
+- Segment comparison tables and charts
+- Side-by-side segment performance
+
+### Visualizations
+- Journey performance bar charts
+- Segment comparison charts
+- Interactive tooltips
+- Pinterest-themed styling
+
+### Report Export
+- **HTML**: Formatted report with styling (best for sharing)
+- **CSV**: Data for Excel/Google Sheets analysis
+- **Text**: Plain text format
+- Automatic insights generation
+- Executive summary included
+
+---
+
+## 🔧 Development
+
+### Backend
+```bash
+cd backend
+source venv/bin/activate
+uvicorn app.main:app --reload
+```
+
+API docs available at: `http://localhost:8000/docs`
+
+### Frontend
+```bash
+cd frontend
+npm run dev
+```
+
+Development server: `http://localhost:5173`
+
+### Pre-populate Data
+```bash
+cd backend
+python populate_sample_data.py
+```
+
+This creates sample events for:
+- `pin_view`, `save`, `click`, `purchase` events
+- Planner and Actor user segments
+- New and Retained user tenure
+- Various content categories
+
+---
 
 ## 🧪 Testing
 
@@ -74,11 +193,38 @@ See [documents/README.md](./documents/README.md) for complete documentation.
 cd backend
 pytest
 
-# Frontend tests
-cd frontend
+# Frontend (run in frontend directory)
 npm test
 ```
 
-## 📝 License
+---
 
-MIT
+## 📄 License
+
+See [LICENSE](./LICENSE) file
+
+---
+
+## 🤝 Contributing
+
+This is a POC project for a Pinterest Data Scientist position. Contributions welcome!
+
+---
+
+## 🙏 Acknowledgments
+
+- Inspired by Pinterest's inspiration-to-action framework
+- Built for Product Data Scientists
+- Designed for decision-making and experimentation
+
+---
+
+## 📞 Support
+
+- **Issues**: Open an issue on GitHub
+- **Documentation**: See `/documents` folder
+- **Quick Help**: See [QUICK_START.md](./QUICK_START.md)
+
+---
+
+**Built with ❤️ for Product Data Scientists**
