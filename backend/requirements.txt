@@ -1,8 +1,8 @@
 # Web Framework
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
-pydantic==2.5.0
-pydantic-settings==2.1.0
+pydantic>=2.10.0  # Use newer version with better wheel support
+pydantic-settings>=2.6.0  # Compatible with newer pydantic
 
 # Data Processing (Python 3.13 compatible)
 duckdb>=1.4.3

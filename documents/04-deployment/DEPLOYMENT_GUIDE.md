@@ -154,12 +154,14 @@ Frontend should be running at: `http://localhost:5173` (or similar port)
    Start Command: uvicorn app.main:app --host 0.0.0.0 --port $PORT
    ```
 
-   **⚠️ Important - Python Version**:
-   - Before clicking "Create Web Service", scroll down to "Advanced"
-   - Set "Python Version" to `3.11.0` or `3.12.0`
-   - This avoids Rust compilation errors with Python 3.13
-   - OR: The `runtime.txt` file in the backend directory already specifies Python 3.11.0
-   - Render will automatically detect and use the Python version from `runtime.txt`
+   **⚠️ IMPORTANT - Python Version**:
+   - **Must set manually in Render UI** (recommended for immediate fix):
+     - Before clicking "Create Web Service", scroll down to "Advanced"
+     - Set "Python Version" to `3.11.0` or `3.12.0`
+     - This avoids Rust compilation errors with Python 3.13
+   - **OR**: The `runtime.txt` file specifies Python 3.11.0, but Render may not always detect it
+   - **Why**: Python 3.13 requires Rust compilation for some packages, which fails on Render's free tier
+   - **Solution**: Always set Python version manually in Render's Advanced settings!
 
 3. **Environment Variables** (optional, will use defaults):
    - Click "Advanced" → "Add Environment Variable"
