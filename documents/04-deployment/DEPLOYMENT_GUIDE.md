@@ -149,9 +149,17 @@ Frontend should be running at: `http://localhost:5173` (or similar port)
    Branch: main (or your default branch)
    Root Directory: backend
    Runtime: Python 3
+   Python Version: 3.11.0 (or 3.12.0 - recommended!)
    Build Command: pip install -r requirements.txt && python populate_sample_data.py
    Start Command: uvicorn app.main:app --host 0.0.0.0 --port $PORT
    ```
+
+   **⚠️ Important - Python Version**:
+   - Before clicking "Create Web Service", scroll down to "Advanced"
+   - Set "Python Version" to `3.11.0` or `3.12.0`
+   - This avoids Rust compilation errors with Python 3.13
+   - OR: The `runtime.txt` file in the backend directory already specifies Python 3.11.0
+   - Render will automatically detect and use the Python version from `runtime.txt`
 
 3. **Environment Variables** (optional, will use defaults):
    - Click "Advanced" → "Add Environment Variable"
