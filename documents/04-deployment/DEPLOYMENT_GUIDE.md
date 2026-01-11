@@ -429,6 +429,10 @@ app.add_middleware(
 - **Build fails**: Check build logs in deployment platform
 - **Environment variables**: Ensure they're set correctly
 - **Static files not serving**: Check publish directory is `dist`
+- **Python version errors (Rust compilation)**: 
+  - Set Python version to 3.11.0 or 3.12.0 in Render settings
+  - Or create `runtime.txt` file with `python-3.11.0` in backend directory
+  - Python 3.13 may have issues with package wheels requiring Rust compilation
 
 ---
 
