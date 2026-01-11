@@ -291,8 +291,330 @@ Be data-driven, specific, and actionable. Format as valid JSON only."""
         
         context = audience_contexts.get(audience, audience_contexts["data_scientist"])
         
-        # Build report prompt
-        prompt = f"""You are a Product Data Scientist creating a {format.upper()} report for {audience.replace('_', ' ').title()} audience.
+        # Build report prompt with Pinterest-themed HTML template
+        if format == "html":
+            html_template = """
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>IAFA Report - {funnel_name}</title>
+  <style>
+    * {{
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }}
+    body {{
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #111827;
+      background: linear-gradient(to bottom, #FAFAFA 0%, #FFFFFF 100%);
+      padding: 40px 20px;
+    }}
+    .container {{
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.07), 0 10px 20px rgba(0,0,0,0.05);
+      overflow: hidden;
+    }}
+    .header {{
+      background: linear-gradient(135deg, #E60023 0%, #BD001F 100%);
+      color: white;
+      padding: 50px 40px;
+      text-align: center;
+    }}
+    .header h1 {{
+      font-size: 2.5em;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: -0.5px;
+    }}
+    .header p {{
+      font-size: 1.1em;
+      opacity: 0.95;
+      font-weight: 300;
+    }}
+    .content {{
+      padding: 50px 40px;
+    }}
+    .section {{
+      margin-bottom: 50px;
+    }}
+    .section:last-child {{
+      margin-bottom: 0;
+    }}
+    h2 {{
+      color: #E60023;
+      font-size: 1.8em;
+      font-weight: 700;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid #E60023;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }}
+    h2::before {{
+      content: '';
+      width: 4px;
+      height: 24px;
+      background: #E60023;
+      border-radius: 2px;
+    }}
+    h3 {{
+      color: #111827;
+      font-size: 1.3em;
+      font-weight: 600;
+      margin-top: 30px;
+      margin-bottom: 15px;
+    }}
+    .summary-box {{
+      background: linear-gradient(135deg, #FEF2F2 0%, #FEFEFE 100%);
+      border-left: 4px solid #E60023;
+      border-radius: 12px;
+      padding: 25px;
+      margin: 20px 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }}
+    .metric-grid {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin: 25px 0;
+    }}
+    .metric-card {{
+      background: #FAFAFA;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      border: 1px solid #E5E7EB;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }}
+    .metric-card:hover {{
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(230,0,35,0.1);
+    }}
+    .metric-value {{
+      font-size: 2em;
+      font-weight: 700;
+      color: #E60023;
+      margin-bottom: 5px;
+    }}
+    .metric-label {{
+      font-size: 0.9em;
+      color: #6B7280;
+      font-weight: 500;
+    }}
+    .insight-item {{
+      background: #EFF6FF;
+      border-left: 4px solid #3B82F6;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 15px 0;
+    }}
+    .recommendation-card {{
+      background: white;
+      border: 2px solid #E5E7EB;
+      border-radius: 12px;
+      padding: 25px;
+      margin: 20px 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }}
+    .recommendation-card.high-priority {{
+      border-color: #E60023;
+      background: linear-gradient(135deg, #FEF2F2 0%, #FFFFFF 100%);
+    }}
+    .recommendation-card.medium-priority {{
+      border-color: #F59E0B;
+      background: linear-gradient(135deg, #FFFBEB 0%, #FFFFFF 100%);
+    }}
+    .priority-badge {{
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.85em;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }}
+    .priority-badge.high {{
+      background: #FEE2E2;
+      color: #991B1B;
+    }}
+    .priority-badge.medium {{
+      background: #FEF3C7;
+      color: #92400E;
+    }}
+    .priority-badge.low {{
+      background: #D1FAE5;
+      color: #065F46;
+    }}
+    .action-item {{
+      background: #F9FAFB;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 10px 0;
+      border-left: 3px solid #E60023;
+    }}
+    .experiment-box {{
+      background: linear-gradient(135deg, #F3E8FF 0%, #FAF5FF 100%);
+      border: 2px solid #A78BFA;
+      border-radius: 12px;
+      padding: 25px;
+      margin: 20px 0;
+    }}
+    .guardrail-box {{
+      background: linear-gradient(135deg, #FEF3C7 0%, #FFFBEB 100%);
+      border: 2px solid #F59E0B;
+      border-radius: 12px;
+      padding: 25px;
+      margin: 20px 0;
+    }}
+    ul, ol {{
+      margin: 15px 0;
+      padding-left: 25px;
+    }}
+    li {{
+      margin: 8px 0;
+      line-height: 1.7;
+    }}
+    p {{
+      margin: 15px 0;
+      line-height: 1.8;
+    }}
+    .footer {{
+      background: #F9FAFB;
+      padding: 30px 40px;
+      text-align: center;
+      color: #6B7280;
+      font-size: 0.9em;
+      border-top: 1px solid #E5E7EB;
+    }}
+    .footer strong {{
+      color: #E60023;
+    }}
+    table {{
+      width: 100%;
+      border-collapse: collapse;
+      margin: 25px 0;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }}
+    th {{
+      background: #E60023;
+      color: white;
+      padding: 15px;
+      text-align: left;
+      font-weight: 600;
+    }}
+    td {{
+      padding: 15px;
+      border-bottom: 1px solid #E5E7EB;
+    }}
+    tr:hover {{
+      background: #FAFAFA;
+    }}
+    .highlight {{
+      background: #FEF2F2;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #E60023;
+      font-weight: 600;
+    }}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📊 IAFA Journey Report</h1>
+      <p>{funnel_name} • {start_date} to {end_date}</p>
+    </div>
+    <div class="content">
+      {report_content}
+    </div>
+    <div class="footer">
+      <p><strong>Inspiration-to-Action Funnel Analyzer (IAFA)</strong></p>
+      <p>Generated on {generated_at} • Powered by AI Insights</p>
+    </div>
+  </div>
+</body>
+</html>
+"""
+            
+            prompt = f"""You are a Product Data Scientist creating a beautifully styled HTML report for Pinterest with Pinterest-themed design.
+
+Funnel Metrics:
+{formatted_data}
+
+AI-Generated Insights & Recommendations:
+{json.dumps(recommendations, indent=2)}
+
+Audience Context:
+- Tone: {context['tone']}
+- Focus: {context['focus']}
+- Length: {context['length']}
+- Sections: {context['sections']}
+
+Generate a comprehensive HTML report with Pinterest-themed styling. Use the following HTML structure and CSS classes:
+
+1. **Executive Summary** - Use `<div class="summary-box">` for the summary section
+   - High-level overview of journey performance
+   - Key findings and business impact
+   - Top recommendations
+
+2. **Key Metrics** - Use `<div class="metric-grid">` with `<div class="metric-card">` for each metric
+   - Total users exposed (use `<span class="metric-value">` for numbers)
+   - Overall progression rate
+   - Stage-by-stage breakdown (use a table with proper styling)
+   - Segment comparisons (if applicable)
+
+3. **Insights** - Use `<div class="insight-item">` for each insight
+   - Key patterns and trends
+   - Segment differences
+   - Bottleneck identification
+
+4. **Recommendations** - Use `<div class="recommendation-card high-priority">` or `medium-priority` or `low-priority`
+   - Add `<span class="priority-badge high">High Priority</span>` for priority badges
+   - High-priority actions
+   - Expected impact
+   - Implementation steps (use `<div class="action-item">` for each action)
+
+5. **Experiment Suggestions** - Use `<div class="experiment-box">` for each experiment
+   - Testable hypotheses
+   - Experiment designs
+   - Success metrics
+
+6. **Guardrails & Risks** - Use `<div class="guardrail-box">` for guardrails
+   - Potential negative impacts
+   - Metrics to monitor
+   - Risk mitigation
+
+7. **Next Steps** - Use `<div class="action-item">` for each action item
+   - Immediate actions
+   - Follow-up analysis
+   - Timeline suggestions
+
+HTML Structure Requirements:
+- Use proper HTML5 semantic tags
+- Use `<h2>` for main section headers (they will be styled with Pinterest red)
+- Use `<h3>` for subsections
+- Use the provided CSS classes for styling
+- Include data-driven evidence for all claims
+- Make it visually appealing with proper spacing
+- Use tables for metric comparisons
+- Use `<span class="highlight">` to highlight important numbers or metrics
+- Be specific and actionable
+
+Generate ONLY the content that goes inside `<div class="content">` (the {report_content} placeholder). Do NOT include the full HTML template, just the content sections with proper HTML tags and classes.
+
+Format your response as clean HTML that will be inserted into the template:"""
+        else:
+            # For markdown and text, use simpler formatting
+            prompt = f"""You are a Product Data Scientist creating a {format.upper()} report for {audience.replace('_', ' ').title()} audience.
 
 Funnel Metrics:
 {formatted_data}
@@ -366,6 +688,27 @@ Generate the complete report now:"""
             )
             
             report_content = response.choices[0].message.content.strip()
+            
+            # For HTML format, wrap content in Pinterest-themed template
+            if format == "html":
+                # Extract HTML content (remove any markdown code blocks if present)
+                if "```html" in report_content:
+                    report_content = report_content.split("```html")[1].split("```")[0].strip()
+                elif "```" in report_content:
+                    report_content = report_content.split("```")[1].split("```")[0].strip()
+                
+                # Format the HTML template with actual values
+                from datetime import datetime as dt
+                generated_at = dt.now().strftime("%B %d, %Y at %I:%M %p")
+                
+                full_html = html_template.format(
+                    funnel_name=analytics_data.get('funnel_name', 'Unknown Journey'),
+                    start_date=start_date,
+                    end_date=end_date,
+                    report_content=report_content,
+                    generated_at=generated_at
+                )
+                report_content = full_html
             
             return {
                 "report": report_content,
