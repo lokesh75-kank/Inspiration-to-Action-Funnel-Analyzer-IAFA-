@@ -588,7 +588,6 @@ export default function Dashboard() {
                       <ChartSwitcher 
                         stages={analytics.stages}
                         segments={analytics.segments}
-                        segmentBy={analytics.segment_by}
                       />
                     </div>
 

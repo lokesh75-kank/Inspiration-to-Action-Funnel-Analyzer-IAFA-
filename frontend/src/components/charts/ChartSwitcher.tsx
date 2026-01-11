@@ -21,12 +21,11 @@ interface SegmentData {
 interface ChartSwitcherProps {
   stages?: StageData[]
   segments?: SegmentData
-  segmentBy?: string
 }
 
 type ChartType = 'funnel' | 'segment' | 'trend'
 
-export default function ChartSwitcher({ stages, segments, segmentBy }: ChartSwitcherProps) {
+export default function ChartSwitcher({ stages, segments }: ChartSwitcherProps) {
   const [chartType, setChartType] = useState<ChartType>('funnel')
 
   // Prepare trend data (conversion rate over stages)
