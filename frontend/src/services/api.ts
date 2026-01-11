@@ -123,6 +123,82 @@ export const analyticsApi = {
     
     return apiClient.get(`/analytics/funnel/${funnelId}`, { params });
   },
+  getFunnelRecommendations: (
+    funnelId: string,
+    startDate: string,
+    endDate: string,
+    filters?: {
+      user_intent?: string[];
+      content_category?: string[];
+      surface?: string[];
+      user_tenure?: string[];
+      segment_by?: string;
+    },
+    orgId: string = 'poc-org',
+    audience: string = 'data_scientist'
+  ) => {
+    const segment_filters: any = {};
+    if (filters?.user_intent && filters.user_intent.length > 0) {
+      segment_filters.user_intent = filters.user_intent;
+    }
+    if (filters?.content_category && filters.content_category.length > 0) {
+      segment_filters.content_category = filters.content_category;
+    }
+    if (filters?.surface && filters.surface.length > 0) {
+      segment_filters.surface = filters.surface;
+    }
+    if (filters?.user_tenure && filters.user_tenure.length > 0) {
+      segment_filters.user_tenure = filters.user_tenure;
+    }
+    
+    return apiClient.post(`/analytics/funnel/${funnelId}/recommendations`, {
+      org_id: orgId,
+      start_date: startDate,
+      end_date: endDate,
+      segment_filters,
+      segment_by: filters?.segment_by,
+      audience
+    });
+  },
+  generateAIReport: (
+    funnelId: string,
+    startDate: string,
+    endDate: string,
+    filters?: {
+      user_intent?: string[];
+      content_category?: string[];
+      surface?: string[];
+      user_tenure?: string[];
+      segment_by?: string;
+    },
+    orgId: string = 'poc-org',
+    audience: string = 'data_scientist',
+    format: string = 'html'
+  ) => {
+    const segment_filters: any = {};
+    if (filters?.user_intent && filters.user_intent.length > 0) {
+      segment_filters.user_intent = filters.user_intent;
+    }
+    if (filters?.content_category && filters.content_category.length > 0) {
+      segment_filters.content_category = filters.content_category;
+    }
+    if (filters?.surface && filters.surface.length > 0) {
+      segment_filters.surface = filters.surface;
+    }
+    if (filters?.user_tenure && filters.user_tenure.length > 0) {
+      segment_filters.user_tenure = filters.user_tenure;
+    }
+    
+    return apiClient.post(`/analytics/funnel/${funnelId}/report`, {
+      org_id: orgId,
+      start_date: startDate,
+      end_date: endDate,
+      segment_filters,
+      segment_by: filters?.segment_by,
+      audience,
+      format
+    });
+  },
 };
 
 // Tracking (for external use)

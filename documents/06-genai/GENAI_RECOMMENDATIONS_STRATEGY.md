@@ -140,6 +140,97 @@ Integrate GenAI to transform raw funnel analytics into actionable insights and r
   - **Q**: "Why is Planner conversion higher?"
   - **A**: "Planner segment shows 45% conversion vs 25% for Actor. Key factors: (1) Higher save rate (60% vs 40%), (2) Better click-through on saved content (50% vs 30%), (3) Stronger intent formation. Recommendation: Apply Planner strategies to Actor segment."
 
+### 11. **Hypothesis Generation** 🔬
+**What it does**: Generates testable hypotheses from observational data
+- **Input**: Funnel metrics, segment breakdowns, patterns
+- **Output**: 
+  - Testable hypotheses with rationale
+  - Evidence supporting each hypothesis
+  - Suggested experiments to test
+  - Expected outcomes
+- **Example**: 
+  - **Observation**: "Planner segment converts 45% vs Actor 25%"
+  - **Hypothesis 1**: "Planner segment has stronger intent formation"
+    - **Evidence**: Higher save rate (60% vs 40%), better click-through on saved content
+    - **Test**: A/B test improved content relevance for saved pins
+    - **Expected**: +15% click-through for Planner segment
+  - **Hypothesis 2**: "Planner segment engages with different content types"
+    - **Evidence**: Different content_category distribution
+    - **Test**: Personalize content based on saved board context
+    - **Expected**: +10% overall conversion
+
+### 12. **Experiment Design** 🧪
+**What it does**: Designs complete A/B test experiments from hypotheses
+- **Input**: Hypothesis, current metrics, business context
+- **Output**: 
+  - Complete experiment structure
+  - Variant definitions
+  - Success metrics and guardrails
+  - Sample size calculations
+  - Duration recommendations
+  - Randomization strategy
+- **Example**: 
+  - **Hypothesis**: "Improved content relevance increases Planner conversion"
+  - **Experiment Design**:
+    - **Variants**: Control (current algorithm) vs Treatment (improved visual matching)
+    - **Success Metrics**: Click-through rate, Save-to-Click conversion, Overall conversion
+    - **Guardrails**: Monitor Actor segment (don't hurt them), Save rate, Content diversity
+    - **Sample Size**: 10,000 users per variant (power: 80%, alpha: 0.05)
+    - **Duration**: 2 weeks
+    - **Randomization**: By user_id (50/50 split)
+    - **Analysis Plan**: Compare conversion rates, segment breakdown, guardrail checks
+
+### 13. **Experiment Results Analysis** 📊
+**What it does**: Analyzes A/B test results with statistical rigor
+- **Input**: Control and treatment funnel metrics, experiment design
+- **Output**: 
+  - Statistical significance testing
+  - Effect size calculations
+  - Segment-level analysis
+  - Guardrail violation checks
+  - Recommendation (Ship/Iterate/Rollback)
+- **Example**: 
+  - **Results**: Treatment shows +12% click-through
+  - **Statistical Analysis**: 
+    - **Significance**: p < 0.001 (highly significant)
+    - **Effect Size**: Cohen's d = 0.35 (medium effect)
+    - **Confidence Interval**: [8%, 16%]
+  - **Segment Breakdown**: 
+    - Planner: +18% improvement (primary target) ✅
+    - Actor: +5% improvement (no negative impact) ✅
+  - **Guardrail Check**: 
+    - Save rate: Maintained ✅
+    - Content diversity: Stable ✅
+    - No negative impacts ✅
+  - **Recommendation**: **SHIP** - Positive impact with no guardrail violations
+
+### 14. **Causal Inference** 🔍
+**What it does**: Interprets experiment results causally with confidence
+- **Input**: Experiment results, context, potential confounders
+- **Output**: 
+  - Causal conclusions
+  - Mechanism identification
+  - Confounding factor checks
+  - Confidence levels
+  - Causal chain explanation
+- **Example**: 
+  - **Causal Conclusion**: "Treatment CAUSED +12% click-through improvement"
+  - **Mechanism**: Improved content relevance → Better intent matching → Higher click action
+  - **Confounding Check**: 
+    - ✅ No external factors (holidays, algorithm changes)
+    - ✅ Randomization successful (no selection bias)
+    - ✅ No temporal effects
+  - **Causal Chain**: 
+    1. Treatment (improved matching) → 
+    2. Better content relevance → 
+    3. Stronger intent match → 
+    4. Higher click probability
+  - **Confidence**: High (statistically significant, no confounders, clear mechanism)
+  - **Next Steps**: 
+    1. Roll out to 50% of users
+    2. Monitor long-term effects (2 weeks)
+    3. Test similar hypothesis for Actor segment
+
 ---
 
 ## 🏗️ Architecture
@@ -423,6 +514,285 @@ Content-Type: application/json
 }
 ```
 
+### Endpoint 4: `/api/v1/analytics/{funnel_id}/hypotheses`
+
+**Purpose**: Generate testable hypotheses from observational data
+
+**Request:**
+```http
+POST /api/v1/analytics/{funnel_id}/hypotheses
+Content-Type: application/json
+
+{
+  "start_date": "2026-01-01",
+  "end_date": "2026-01-31",
+  "segment_filters": {...},
+  "segment_by": "user_intent",
+  "focus_areas": ["conversion_rate", "drop_off", "segment_differences"]
+}
+```
+
+**Response:**
+```json
+{
+  "hypotheses": [
+    {
+      "id": "hyp_1",
+      "title": "Planner segment has stronger intent formation",
+      "description": "Planner segment shows 45% conversion vs 25% for Actor, suggesting stronger intent formation",
+      "evidence": [
+        "Higher save rate (60% vs 40%)",
+        "Better click-through on saved content (50% vs 30%)",
+        "Stronger progression through stages"
+      ],
+      "testable": true,
+      "suggested_experiment": {
+        "type": "A/B test",
+        "description": "Test improved content relevance for saved pins",
+        "expected_outcome": "+15% click-through for Planner segment"
+      },
+      "priority": "High"
+    }
+  ],
+  "generated_at": "2026-01-15T10:30:00Z"
+}
+```
+
+### Endpoint 5: `/api/v1/analytics/{funnel_id}/experiment/design`
+
+**Purpose**: Design complete A/B test experiments from hypotheses
+
+**Request:**
+```http
+POST /api/v1/analytics/{funnel_id}/experiment/design
+Content-Type: application/json
+
+{
+  "hypothesis": "Improved content relevance increases Planner conversion",
+  "current_metrics": {...},
+  "business_context": {
+    "project": "Pinterest",
+    "domain": "Home Feed",
+    "constraints": ["Don't hurt Actor segment", "Maintain save rate"]
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "experiment_design": {
+    "hypothesis": "Improved content relevance increases Planner conversion",
+    "variants": {
+      "control": {
+        "name": "Current Algorithm",
+        "description": "Existing content matching algorithm"
+      },
+      "treatment": {
+        "name": "Improved Visual Matching",
+        "description": "Enhanced visual similarity matching for saved pins"
+      }
+    },
+    "success_metrics": [
+      "Click-through rate",
+      "Save-to-Click conversion",
+      "Overall conversion rate"
+    ],
+    "guardrails": [
+      "Monitor Actor segment (no negative impact)",
+      "Maintain save rate (>= current baseline)",
+      "Preserve content diversity"
+    ],
+    "sample_size": {
+      "per_variant": 10000,
+      "total": 20000,
+      "power": 0.80,
+      "alpha": 0.05,
+      "mde": 0.10
+    },
+    "duration": {
+      "weeks": 2,
+      "rationale": "Sufficient for statistical power, accounts for weekly patterns"
+    },
+    "randomization": {
+      "method": "user_id",
+      "split": "50/50",
+      "stratification": ["user_intent", "user_tenure"]
+    },
+    "analysis_plan": {
+      "primary_analysis": "Compare conversion rates (t-test)",
+      "secondary_analysis": ["Segment breakdown", "Guardrail checks", "Time-series analysis"],
+      "stopping_rules": ["Guardrail violation", "Significant negative impact"]
+    }
+  },
+  "generated_at": "2026-01-15T10:30:00Z"
+}
+```
+
+### Endpoint 6: `/api/v1/analytics/{funnel_id}/experiment/analyze`
+
+**Purpose**: Analyze A/B test results with statistical rigor
+
+**Request:**
+```http
+POST /api/v1/analytics/{funnel_id}/experiment/analyze
+Content-Type: application/json
+
+{
+  "experiment_id": "exp_123",
+  "control_funnel_id": "funnel_control",
+  "treatment_funnel_id": "funnel_treatment",
+  "start_date": "2026-01-01",
+  "end_date": "2026-01-15",
+  "experiment_design": {...}
+}
+```
+
+**Response:**
+```json
+{
+  "experiment_id": "exp_123",
+  "statistical_analysis": {
+    "primary_metric": {
+      "metric": "Click-through rate",
+      "control_value": 30.0,
+      "treatment_value": 33.6,
+      "difference": 3.6,
+      "relative_lift": 12.0,
+      "p_value": 0.001,
+      "significant": true,
+      "effect_size": 0.35,
+      "confidence_interval": [2.1, 5.1]
+    },
+    "secondary_metrics": [...]
+  },
+  "segment_analysis": {
+    "Planner": {
+      "control": 45.0,
+      "treatment": 53.1,
+      "lift": 18.0,
+      "significant": true
+    },
+    "Actor": {
+      "control": 25.0,
+      "treatment": 26.25,
+      "lift": 5.0,
+      "significant": false
+    }
+  },
+  "guardrail_checks": {
+    "save_rate": {
+      "status": "passed",
+      "control": 50.0,
+      "treatment": 51.0,
+      "change": 1.0
+    },
+    "content_diversity": {
+      "status": "passed",
+      "metric": "Shannon diversity index",
+      "control": 2.8,
+      "treatment": 2.75,
+      "change": -0.05
+    },
+    "actor_segment": {
+      "status": "passed",
+      "impact": "positive",
+      "change": 5.0
+    }
+  },
+  "recommendation": {
+    "decision": "SHIP",
+    "confidence": "High",
+    "rationale": "Positive impact with no guardrail violations. Statistically significant improvement for target segment.",
+    "next_steps": [
+      "Roll out to 50% of users",
+      "Monitor for 2 weeks",
+      "Full rollout if stable"
+    ]
+  },
+  "generated_at": "2026-01-15T10:30:00Z"
+}
+```
+
+### Endpoint 7: `/api/v1/analytics/{funnel_id}/experiment/causal`
+
+**Purpose**: Interpret experiment results causally
+
+**Request:**
+```http
+POST /api/v1/analytics/{funnel_id}/experiment/causal
+Content-Type: application/json
+
+{
+  "experiment_id": "exp_123",
+  "experiment_results": {...},
+  "context": {
+    "external_factors": ["No holidays", "No algorithm changes"],
+    "randomization_check": "Passed",
+    "temporal_effects": "None detected"
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "experiment_id": "exp_123",
+  "causal_conclusion": {
+    "statement": "Treatment CAUSED +12% click-through improvement",
+    "confidence": "High",
+    "rationale": "Statistically significant, no confounders, clear mechanism"
+  },
+  "mechanism": {
+    "description": "Improved content relevance → Better intent matching → Higher click action",
+    "causal_chain": [
+      {
+        "step": 1,
+        "cause": "Treatment (improved visual matching)",
+        "effect": "Better content relevance for saved pins"
+      },
+      {
+        "step": 2,
+        "cause": "Better content relevance",
+        "effect": "Stronger intent match"
+      },
+      {
+        "step": 3,
+        "cause": "Stronger intent match",
+        "effect": "Higher click probability"
+      }
+    ]
+  },
+  "confounding_check": {
+    "external_factors": {
+      "status": "passed",
+      "check": "No holidays, algorithm changes, or external events"
+    },
+    "selection_bias": {
+      "status": "passed",
+      "check": "Randomization successful, no selection bias"
+    },
+    "temporal_effects": {
+      "status": "passed",
+      "check": "No time-based trends detected"
+    },
+    "overall": "No confounders detected"
+  },
+  "generalizability": {
+    "internal_validity": "High",
+    "external_validity": "Medium",
+    "notes": "Results apply to similar user segments and contexts"
+  },
+  "next_steps": [
+    "Roll out to 50% of users",
+    "Monitor long-term effects (2 weeks)",
+    "Test similar hypothesis for Actor segment",
+    "Consider mechanism for other content types"
+  ],
+  "generated_at": "2026-01-15T10:30:00Z"
+}
+```
+
 ---
 
 ## 🎨 UI Integration
@@ -478,6 +848,140 @@ Content-Type: application/json
 - Mark as "Reviewed", "In Progress", "Completed"
 - Impact tracking
 - Experiment linking
+
+### 5. **Hypothesis Generator** (New Feature)
+**Location**: New "Generate Hypotheses" button in Dashboard
+**Features**:
+- Analyze current funnel data
+- Generate 3-5 testable hypotheses
+- Show evidence for each hypothesis
+- Link to experiment design
+- Export hypotheses
+
+**UI Example:**
+```
+┌─────────────────────────────────────────────────────┐
+│ 🔬 Generate Hypotheses                             │
+│ [Generate] [Export]                                 │
+├─────────────────────────────────────────────────────┤
+│ Generated Hypotheses (3)                            │
+│                                                     │
+│ [High Priority] Planner intent formation stronger │
+│ Evidence: 60% save rate vs 40%, 50% click-through │
+│ Test: Improved content relevance                    │
+│ Expected: +15% click-through                        │
+│ [Design Experiment] [View Details]                  │
+│                                                     │
+│ [Medium] Content type personalization              │
+│ Evidence: Different category distribution          │
+│ Test: Board-based personalization                  │
+│ Expected: +10% conversion                          │
+│ [Design Experiment] [View Details]                 │
+└─────────────────────────────────────────────────────┘
+```
+
+### 6. **Experiment Designer** (New Feature)
+**Location**: Accessible from Hypothesis Generator or standalone
+**Features**:
+- Complete experiment design
+- Variant definitions
+- Success metrics and guardrails
+- Sample size calculator
+- Export experiment plan
+
+**UI Example:**
+```
+┌─────────────────────────────────────────────────────┐
+│ 🧪 Experiment Designer                              │
+│ Hypothesis: Improved content relevance...           │
+├─────────────────────────────────────────────────────┤
+│ Variants:                                            │
+│ • Control: Current algorithm                        │
+│ • Treatment: Improved visual matching               │
+│                                                     │
+│ Success Metrics:                                    │
+│ • Click-through rate (Primary)                      │
+│ • Save-to-Click conversion                          │
+│ • Overall conversion                                │
+│                                                     │
+│ Guardrails:                                         │
+│ • Monitor Actor segment                             │
+│ • Maintain save rate                                │
+│                                                     │
+│ Sample Size: 10,000 per variant (2 weeks)           │
+│ [Export Design] [Start Experiment]                  │
+└─────────────────────────────────────────────────────┘
+```
+
+### 7. **Experiment Analyzer** (New Feature)
+**Location**: New "Analyze Experiment" button when comparing funnels
+**Features**:
+- Statistical significance testing
+- Effect size calculations
+- Segment-level analysis
+- Guardrail violation checks
+- Ship/Iterate/Rollback recommendation
+
+**UI Example:**
+```
+┌─────────────────────────────────────────────────────┐
+│ 📊 Experiment Analysis: exp_123                      │
+│ Control vs Treatment                                │
+├─────────────────────────────────────────────────────┤
+│ Primary Metric: Click-through rate                  │
+│ • Control: 30.0%                                    │
+│ • Treatment: 33.6% (+12% lift)                      │
+│ • p-value: 0.001 ✅ Significant                     │
+│                                                     │
+│ Segment Analysis:                                   │
+│ • Planner: +18% ✅ (Target segment)                 │
+│ • Actor: +5% ✅ (No negative impact)                │
+│                                                     │
+│ Guardrail Checks:                                   │
+│ • Save rate: ✅ Maintained                          │
+│ • Content diversity: ✅ Stable                      │
+│                                                     │
+│ Recommendation: [SHIP] High confidence              │
+│ [View Causal Analysis] [Export Report]              │
+└─────────────────────────────────────────────────────┘
+```
+
+### 8. **Causal Inference Panel** (New Feature)
+**Location**: Accessible from Experiment Analyzer
+**Features**:
+- Causal conclusions
+- Mechanism identification
+- Confounding factor checks
+- Confidence levels
+- Causal chain visualization
+
+**UI Example:**
+```
+┌─────────────────────────────────────────────────────┐
+│ 🔍 Causal Inference Analysis                        │
+│ Experiment: exp_123                                 │
+├─────────────────────────────────────────────────────┤
+│ Causal Conclusion:                                  │
+│ Treatment CAUSED +12% improvement                   │
+│ Confidence: High                                    │
+│                                                     │
+│ Causal Chain:                                       │
+│ 1. Improved matching →                              │
+│ 2. Better relevance →                               │
+│ 3. Stronger intent →                                │
+│ 4. Higher clicks                                    │
+│                                                     │
+│ Confounding Check:                                  │
+│ • External factors: ✅ None                         │
+│ • Selection bias: ✅ None                           │
+│ • Temporal effects: ✅ None                         │
+│                                                     │
+│ Next Steps:                                         │
+│ • Roll out to 50%                                   │
+│ • Monitor 2 weeks                                   │
+│ [Export Analysis]                                    │
+└─────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -591,7 +1095,59 @@ Content-Type: application/json
 
 ---
 
-### **Phase 5: Advanced Features (Week 9-10)** 🚀
+### **Phase 5: Hypothesis & Experiment Features (Week 9-10)** 🔬
+**Goal**: Hypothesis generation and experiment design support
+
+1. **Hypothesis Generation**
+   - [ ] Create `/api/v1/analytics/{funnel_id}/hypotheses` endpoint
+   - [ ] Implement hypothesis generation prompts
+   - [ ] Create `HypothesisGenerator.tsx` component
+   - [ ] Add to Dashboard
+   - [ ] Export functionality
+
+2. **Experiment Design**
+   - [ ] Create `/api/v1/analytics/{funnel_id}/experiment/design` endpoint
+   - [ ] Implement experiment design prompts
+   - [ ] Create `ExperimentDesigner.tsx` component
+   - [ ] Sample size calculator
+   - [ ] Export experiment plan
+
+3. **Testing**
+   - [ ] Test with sample hypotheses
+   - [ ] Validate experiment designs
+   - [ ] User acceptance testing
+
+**Deliverable**: Working hypothesis generator and experiment designer
+
+---
+
+### **Phase 6: Experiment Analysis & Causal Inference (Week 11-12)** 📊
+**Goal**: Analyze experiments and provide causal conclusions
+
+1. **Experiment Analysis**
+   - [ ] Create `/api/v1/analytics/{funnel_id}/experiment/analyze` endpoint
+   - [ ] Implement statistical analysis prompts
+   - [ ] Create `ExperimentAnalyzer.tsx` component
+   - [ ] Statistical significance testing
+   - [ ] Guardrail violation detection
+
+2. **Causal Inference**
+   - [ ] Create `/api/v1/analytics/{funnel_id}/experiment/causal` endpoint
+   - [ ] Implement causal inference prompts
+   - [ ] Create `CausalInference.tsx` component
+   - [ ] Confounding factor checks
+   - [ ] Causal chain visualization
+
+3. **Integration**
+   - [ ] Link experiment analysis to Dashboard
+   - [ ] Connect to funnel comparison
+   - [ ] Export capabilities
+
+**Deliverable**: Complete experiment analysis and causal inference features
+
+---
+
+### **Phase 7: Advanced Features (Week 13-14)** 🚀
 **Goal**: Predictive insights and advanced analytics
 
 1. **Predictive Analytics**
@@ -720,6 +1276,189 @@ Provide:
 Be concise, data-driven, and actionable.
 ```
 
+### **Hypothesis Generation Prompt**
+```
+You are a Product Data Scientist analyzing Pinterest funnel metrics to generate testable hypotheses.
+
+Funnel Metrics:
+{formatted_funnel_data}
+
+Segment Breakdown:
+{formatted_segment_data}
+
+Business Context:
+- Project: {project_name}
+- Domain: {project_domain}
+- Focus Areas: {focus_areas}
+
+Generate 3-5 testable hypotheses based on the data. For each hypothesis:
+
+1. **Title**: Clear, testable hypothesis statement
+2. **Description**: What the hypothesis suggests
+3. **Evidence**: Data points supporting the hypothesis (specific metrics, comparisons)
+4. **Testable**: Is this hypothesis testable via A/B test or experiment?
+5. **Suggested Experiment**: 
+   - Type: A/B test, observational study, etc.
+   - Description: What to test
+   - Expected Outcome: Quantified expected result
+6. **Priority**: High/Medium/Low based on potential impact
+
+Focus on:
+- Segment differences that suggest causal mechanisms
+- Drop-off points that indicate optimization opportunities
+- Patterns that suggest testable interventions
+- Guardrails to consider
+
+Format as JSON with array of hypotheses.
+```
+
+### **Experiment Design Prompt**
+```
+You are a Product Data Scientist designing an A/B test experiment for Pinterest.
+
+Hypothesis: {hypothesis}
+
+Current Metrics:
+{current_metrics}
+
+Business Context:
+- Project: {project_name}
+- Domain: {project_domain}
+- Constraints: {constraints}
+
+Design a complete A/B test experiment. Provide:
+
+1. **Variants**:
+   - Control: Description of control condition
+   - Treatment: Description of treatment condition
+
+2. **Success Metrics**:
+   - Primary metric (one)
+   - Secondary metrics (2-3)
+   - Guardrails to monitor (prevent negative impacts)
+
+3. **Sample Size**:
+   - Users per variant
+   - Total users
+   - Statistical power (80% recommended)
+   - Alpha level (0.05)
+   - Minimum Detectable Effect (MDE)
+
+4. **Duration**:
+   - Weeks/days
+   - Rationale for duration
+
+5. **Randomization**:
+   - Method (user_id, session_id, etc.)
+   - Split (50/50, 90/10, etc.)
+   - Stratification variables (if any)
+
+6. **Analysis Plan**:
+   - Primary analysis method
+   - Secondary analyses
+   - Stopping rules (when to stop early)
+
+7. **Guardrails**:
+   - Metrics to monitor
+   - Thresholds for stopping
+   - Segments to protect
+
+Format as JSON with complete experiment design.
+```
+
+### **Experiment Analysis Prompt**
+```
+You are a Product Data Scientist analyzing A/B test results for Pinterest.
+
+Experiment ID: {experiment_id}
+
+Control Funnel Metrics:
+{control_funnel_data}
+
+Treatment Funnel Metrics:
+{treatment_funnel_data}
+
+Experiment Design:
+{experiment_design}
+
+Provide comprehensive analysis:
+
+1. **Statistical Analysis**:
+   - Primary metric comparison
+   - Statistical significance (p-value)
+   - Effect size (Cohen's d)
+   - Confidence intervals
+   - Interpretation
+
+2. **Segment Analysis**:
+   - Compare control vs treatment for each segment
+   - Identify which segments benefit most
+   - Check for negative impacts
+
+3. **Guardrail Checks**:
+   - Check each guardrail metric
+   - Identify any violations
+   - Assess severity
+
+4. **Recommendation**:
+   - Decision: SHIP / ITERATE / ROLLBACK
+   - Confidence: High / Medium / Low
+   - Rationale: Clear explanation
+   - Next Steps: Specific actions
+
+5. **Risks**:
+   - Potential negative impacts
+   - Long-term concerns
+   - Mitigation strategies
+
+Format as JSON with complete analysis.
+```
+
+### **Causal Inference Prompt**
+```
+You are a Product Data Scientist performing causal inference analysis for Pinterest A/B test results.
+
+Experiment ID: {experiment_id}
+
+Experiment Results:
+{experiment_results}
+
+Context:
+- External Factors: {external_factors}
+- Randomization Check: {randomization_check}
+- Temporal Effects: {temporal_effects}
+
+Provide causal inference analysis:
+
+1. **Causal Conclusion**:
+   - Statement: Did treatment CAUSE the observed effect?
+   - Confidence: High / Medium / Low
+   - Rationale: Why this conclusion
+
+2. **Mechanism**:
+   - Description: How did treatment cause the effect?
+   - Causal Chain: Step-by-step mechanism (3-4 steps)
+   - Evidence: Data supporting each step
+
+3. **Confounding Check**:
+   - External Factors: Were there confounding events?
+   - Selection Bias: Was randomization successful?
+   - Temporal Effects: Any time-based confounders?
+   - Overall Assessment: Any confounders detected?
+
+4. **Generalizability**:
+   - Internal Validity: Can we trust the causal conclusion?
+   - External Validity: Do results apply to other contexts?
+   - Notes: Limitations and scope
+
+5. **Next Steps**:
+   - Immediate actions
+   - Follow-up experiments
+   - Mechanism testing
+
+Format as JSON with complete causal analysis.
+```
+
 ---
 
 ## 📈 Success Metrics
@@ -833,6 +1572,10 @@ Be concise, data-driven, and actionable.
 - [ ] Create `/api/v1/analytics/{funnel_id}/recommendations` endpoint
 - [ ] Create `/api/v1/analytics/{funnel_id}/report` endpoint
 - [ ] Create `/api/v1/analytics/{funnel_id}/ask` endpoint
+- [ ] Create `/api/v1/analytics/{funnel_id}/hypotheses` endpoint
+- [ ] Create `/api/v1/analytics/{funnel_id}/experiment/design` endpoint
+- [ ] Create `/api/v1/analytics/{funnel_id}/experiment/analyze` endpoint
+- [ ] Create `/api/v1/analytics/{funnel_id}/experiment/causal` endpoint
 - [ ] Add error handling and rate limiting
 - [ ] Add logging and monitoring
 - [ ] Write unit tests
@@ -841,8 +1584,14 @@ Be concise, data-driven, and actionable.
 ### **Frontend**
 - [ ] Create `AIInsightsPanel.tsx` component
 - [ ] Create `AskAI.tsx` component (chat interface)
+- [ ] Create `HypothesisGenerator.tsx` component
+- [ ] Create `ExperimentDesigner.tsx` component
+- [ ] Create `ExperimentAnalyzer.tsx` component
+- [ ] Create `CausalInference.tsx` component
 - [ ] Enhance `ExportReportButton.tsx` with AI option
 - [ ] Add AI insights to Dashboard
+- [ ] Add hypothesis generator to Dashboard
+- [ ] Add experiment tools to Dashboard
 - [ ] Add loading states
 - [ ] Add error handling
 - [ ] Add copy-to-clipboard functionality

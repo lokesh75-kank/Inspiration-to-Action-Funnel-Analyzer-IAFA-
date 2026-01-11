@@ -1,13 +1,31 @@
 import { useState, useRef, useEffect } from 'react'
 import { generateTextReport, generateCSVReport, generateHTMLReport, ReportData } from '../../utils/reportGenerator'
+import ReportPreviewModal from './ReportPreviewModal'
 
 interface ExportReportButtonProps {
   data: ReportData
+  funnelId?: string
+  startDate?: string
+  endDate?: string
+  filters?: {
+    user_intent?: string[]
+    content_category?: string[]
+    surface?: string[]
+    user_tenure?: string[]
+    segment_by?: string
+  }
 }
 
-export default function ExportReportButton({ data }: ExportReportButtonProps) {
+export default function ExportReportButton({ 
+  data, 
+  funnelId, 
+  startDate, 
+  endDate, 
+  filters 
+}: ExportReportButtonProps) {
   const [exporting, setExporting] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
+  const [showAIModal, setShowAIModal] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -71,6 +89,51 @@ export default function ExportReportButton({ data }: ExportReportButtonProps) {
     }
   }
 
+  const handleAIExport = (content: string, format: string) => {
+    setExporting(true)
+    try {
+      let mimeType: string
+      let extension: string
+
+      switch (format) {
+        case 'html':
+          mimeType = 'text/html'
+          extension = 'html'
+          break
+        case 'markdown':
+          mimeType = 'text/markdown'
+          extension = 'md'
+          break
+        case 'text':
+          mimeType = 'text/plain'
+          extension = 'txt'
+          break
+        default:
+          mimeType = 'text/html'
+          extension = 'html'
+      }
+
+      const blob = new Blob([content], { type: mimeType })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      
+      const funnelName = data.funnel_name.replace(/[^a-z0-9]/gi, '_').toLowerCase()
+      const dateStr = new Date().toISOString().split('T')[0]
+      link.download = `iafa_ai_report_${funnelName}_${dateStr}.${extension}`
+      
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Export failed:', error)
+      alert('Failed to export report. Please try again.')
+    } finally {
+      setExporting(false)
+    }
+  }
+
   return (
     <div className="relative">
       <div className="relative" ref={menuRef}>
@@ -103,10 +166,34 @@ export default function ExportReportButton({ data }: ExportReportButtonProps) {
         {/* Dropdown Menu */}
         {showMenu && (
           <div
-            className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 z-10"
-            style={{ minWidth: '200px' }}
+            className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 z-10"
+            style={{ minWidth: '250px' }}
           >
             <div className="py-1">
+              {/* AI Report Section */}
+              {funnelId && startDate && endDate && (
+                <>
+                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b border-gray-200">
+                    🤖 AI-Powered Reports
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowAIModal(true)
+                      setShowMenu(false)
+                    }}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    <div className="font-medium">Generate AI Report</div>
+                    <div className="text-xs text-gray-500">AI-generated insights & recommendations</div>
+                  </button>
+                  <div className="px-4 py-1 border-b border-gray-200"></div>
+                </>
+              )}
+              
+              {/* Standard Export Section */}
+              <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">
+                Standard Exports
+              </div>
               <button
                 onClick={() => {
                   handleExport('html')
@@ -141,6 +228,19 @@ export default function ExportReportButton({ data }: ExportReportButtonProps) {
           </div>
         )}
       </div>
+
+      {/* AI Report Modal */}
+      {funnelId && startDate && endDate && (
+        <ReportPreviewModal
+          isOpen={showAIModal}
+          onClose={() => setShowAIModal(false)}
+          funnelId={funnelId}
+          startDate={startDate}
+          endDate={endDate}
+          filters={filters}
+          onExport={handleAIExport}
+        />
+      )}
     </div>
   )
 }

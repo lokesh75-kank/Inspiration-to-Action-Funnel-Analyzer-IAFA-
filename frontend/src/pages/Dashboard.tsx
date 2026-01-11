@@ -6,6 +6,7 @@ import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import ChartSwitcher from '../components/charts/ChartSwitcher'
 import ExportReportButton from '../components/ui/ExportReportButton'
+import AIInsightsPanel from '../components/ui/AIInsightsPanel'
 import { ReportData } from '../utils/reportGenerator'
 
 interface Funnel {
@@ -215,7 +216,13 @@ export default function Dashboard() {
             </div>
             {analytics && (
               <div className="mt-2">
-                <ExportReportButton data={convertAnalyticsToReportData(analytics)} />
+                <ExportReportButton 
+                  data={convertAnalyticsToReportData(analytics)}
+                  funnelId={selectedFunnelId || undefined}
+                  startDate={startDate.toISOString().split('T')[0]}
+                  endDate={endDate.toISOString().split('T')[0]}
+                  filters={{ user_intent: userIntent, content_category: contentCategory, surface: surface, user_tenure: userTenure, segment_by: segmentBy }}
+                />
               </div>
             )}
           </div>
@@ -458,8 +465,22 @@ export default function Dashboard() {
                   </div>
                 )}
 
+                {/* Overall Chart Switcher for Aggregate View */}
+                {analytics.total && analytics.total.stages && analytics.total.stages.length > 0 && (
+                  <div className="mb-6">
+                    <ChartSwitcher 
+                      stages={analytics.total.stages.map(stage => ({
+                        stage_name: stage.stage_name,
+                        users: stage.users,
+                        conversion_rate: stage.conversion_rate,
+                        drop_off_rate: stage.drop_off_rate,
+                      }))}
+                      segments={analytics.segments}
+                    />
+                  </div>
+                )}
 
-                {/* Segment Comparison */}
+                {/* Segment Breakdown */}
                 <div className="p-6 bg-white rounded-lg shadow">
                   <h2 className="text-xl font-semibold mb-4">
                     Segment Breakdown: {analytics.segment_by?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || ''}
@@ -470,6 +491,21 @@ export default function Dashboard() {
                         <h3 className="text-lg font-semibold text-gray-900 mb-3">
                           {segmentValue} ({segmentData.total_users} users, {segmentData.overall_conversion_rate.toFixed(2)}% conversion)
                         </h3>
+                        
+                        {/* Chart Switcher for this segment */}
+                        {segmentData.stages && segmentData.stages.length > 0 && (
+                          <div className="mb-4">
+                            <ChartSwitcher 
+                              stages={segmentData.stages.map(stage => ({
+                                stage_name: stage.stage_name,
+                                users: stage.users,
+                                conversion_rate: stage.conversion_rate,
+                                drop_off_rate: stage.drop_off_rate,
+                              }))}
+                            />
+                          </div>
+                        )}
+                        
                         <div className="space-y-3">
                           {segmentData.stages.map((stage, index) => {
                             const widthPercent = stage.conversion_rate
@@ -579,6 +615,22 @@ export default function Dashboard() {
                     </p>
                   </div>
                 </div>
+
+                {/* AI Insights Panel */}
+                {selectedFunnelId && startDate && endDate && (
+                  <AIInsightsPanel
+                    funnelId={selectedFunnelId}
+                    startDate={startDate.toISOString().split('T')[0]}
+                    endDate={endDate.toISOString().split('T')[0]}
+                    filters={{
+                      user_intent: userIntent,
+                      content_category: contentCategory,
+                      surface: surface,
+                      user_tenure: userTenure,
+                      segment_by: segmentBy
+                    }}
+                  />
+                )}
 
                 {/* Funnel Visualization */}
                 {analytics.stages && analytics.stages.length > 0 && (

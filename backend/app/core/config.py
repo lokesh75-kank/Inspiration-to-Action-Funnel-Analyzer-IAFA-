@@ -1,7 +1,8 @@
 """Application configuration."""
 
 from pydantic_settings import BaseSettings
-from typing import List
+from pydantic import Field
+from typing import List, Optional
 
 
 class Settings(BaseSettings):
@@ -29,6 +30,9 @@ class Settings(BaseSettings):
     # Event Buffering
     EVENT_BUFFER_SIZE: int = 100
     EVENT_FLUSH_INTERVAL: int = 60  # seconds
+
+    # GenAI Configuration
+    OPENAI_API_KEY: Optional[str] = Field(default=None, env="OPENAI_API_KEY")
 
     @property
     def cors_origins_list(self) -> List[str]:
