@@ -63,11 +63,12 @@ All options include free tiers perfect for demos and portfolios!
 
 ## 📚 Documentation
 
-- **Quick Start**: [QUICK_START.md](./QUICK_START.md) - Get running in 5 minutes
-- **Deployment Guide**: [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - Deploy to cloud for free
+- **Quick Start**: [documents/04-deployment/QUICK_START.md](./documents/04-deployment/QUICK_START.md) - Get running in 5 minutes
+- **Deployment Guide**: [documents/04-deployment/DEPLOYMENT_GUIDE.md](./documents/04-deployment/DEPLOYMENT_GUIDE.md) - Deploy to cloud for free
 - **User Guide**: [documents/05-product/USER_GUIDE.md](./documents/05-product/USER_GUIDE.md) - Complete user documentation
-- **Demo Guide**: [LIVE_DEMO_GUIDE.md](./LIVE_DEMO_GUIDE.md) - Step-by-step demo script
+- **Live Demo Guide**: [documents/05-product/guides/LIVE_DEMO_GUIDE.md](./documents/05-product/guides/LIVE_DEMO_GUIDE.md) - Step-by-step demo guide
 - **GenAI Strategy**: [documents/06-genai/GENAI_RECOMMENDATIONS_STRATEGY.md](./documents/06-genai/GENAI_RECOMMENDATIONS_STRATEGY.md) - AI-powered recommendations (future)
+- **Complete Documentation**: [documents/README.md](./documents/README.md) - All documentation organized by category
 
 ---
 
