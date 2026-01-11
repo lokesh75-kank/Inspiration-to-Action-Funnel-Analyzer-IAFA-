@@ -4,8 +4,7 @@ import { analyticsApi, funnelsApi } from '../services/api'
 import { useProjectStore } from '../store/projectStore'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
-import FunnelBarChart from '../components/charts/FunnelBarChart'
-import SegmentComparisonChart from '../components/charts/SegmentComparisonChart'
+import ChartSwitcher from '../components/charts/ChartSwitcher'
 import ExportReportButton from '../components/ui/ExportReportButton'
 import { ReportData } from '../utils/reportGenerator'
 
@@ -459,15 +458,6 @@ export default function Dashboard() {
                   </div>
                 )}
 
-                {/* Segment Comparison Chart */}
-                {analytics.segments && Object.keys(analytics.segments).length > 0 && (
-                  <div className="p-6 rounded-xl shadow-sm border border-gray-200 mb-6" style={{ backgroundColor: '#FAFAFA' }}>
-                    <h2 className="text-lg font-semibold text-gray-900 mb-6">
-                      Segment Comparison Chart: {analytics.segment_by?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || ''}
-                    </h2>
-                    <SegmentComparisonChart segments={analytics.segments} />
-                  </div>
-                )}
 
                 {/* Segment Comparison */}
                 <div className="p-6 bg-white rounded-lg shadow">
@@ -593,10 +583,13 @@ export default function Dashboard() {
                 {/* Funnel Visualization */}
                 {analytics.stages && analytics.stages.length > 0 && (
                   <>
-                    {/* Chart Visualization */}
-                    <div className="p-6 rounded-xl shadow-sm border border-gray-200 mb-6" style={{ backgroundColor: '#FAFAFA' }}>
-                      <h2 className="text-lg font-semibold text-gray-900 mb-6">Journey Performance Chart</h2>
-                      <FunnelBarChart stages={analytics.stages} />
+                    {/* Chart Switcher - Switch between different chart views */}
+                    <div className="mb-6">
+                      <ChartSwitcher 
+                        stages={analytics.stages}
+                        segments={analytics.segments}
+                        segmentBy={analytics.segment_by}
+                      />
                     </div>
 
                     {/* Stage-by-Stage Breakdown */}
