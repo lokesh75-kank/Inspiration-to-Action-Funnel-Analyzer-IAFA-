@@ -80,6 +80,14 @@ export const funnelsApi = {
   delete: (id: string) => apiClient.delete(`/funnels/${id}`),
 };
 
+// Events
+export const eventsApi = {
+  getEventTypes: (projectId: string) => 
+    apiClient.get<string[]>('/events/types', { 
+      params: { project_id: projectId } 
+    }),
+}
+
 // Analytics
 export const analyticsApi = {
   getFunnelAnalytics: (

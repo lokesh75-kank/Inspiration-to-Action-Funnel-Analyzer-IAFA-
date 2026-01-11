@@ -84,10 +84,8 @@ class ParquetHandler:
                 "user_intent": "Unknown",
                 "surface": "Unknown",
                 "user_tenure": "Unknown",
-                "content_category": None,
-                "experiment_id": None,
-                "variant": None,
             })
+            # Fill remaining None values with empty string or None (for nullable columns)
             df = df.fillna("")  # Fill remaining None values
 
             # Write to Parquet (append if file exists)

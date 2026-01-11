@@ -4,6 +4,10 @@ import { analyticsApi, funnelsApi } from '../services/api'
 import { useProjectStore } from '../store/projectStore'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
+import FunnelBarChart from '../components/charts/FunnelBarChart'
+import SegmentComparisonChart from '../components/charts/SegmentComparisonChart'
+import ExportReportButton from '../components/ui/ExportReportButton'
+import { ReportData } from '../utils/reportGenerator'
 
 interface Funnel {
   id: string
@@ -40,6 +44,55 @@ interface FunnelAnalytics {
     total_users: number
     completed_users: number
     overall_conversion_rate: number
+  }
+}
+
+// Convert analytics data to report format
+function convertAnalyticsToReportData(analytics: FunnelAnalytics): ReportData {
+  if (analytics.segments && analytics.total) {
+    // Segment breakdown mode
+    return {
+      funnel_name: analytics.funnel_name,
+      date_range: analytics.date_range,
+      total_users: analytics.total.total_users,
+      completed_users: analytics.total.completed_users,
+      overall_conversion_rate: analytics.total.overall_conversion_rate,
+      stages: analytics.total.stages.map(stage => ({
+        stage_name: stage.stage_name,
+        users: stage.users,
+        conversion_rate: stage.conversion_rate,
+        drop_off_rate: stage.drop_off_rate,
+      })),
+      segments: Object.entries(analytics.segments).reduce((acc, [key, value]) => {
+        acc[key] = {
+          total_users: value.total_users,
+          completed_users: value.completed_users,
+          overall_conversion_rate: value.overall_conversion_rate,
+          stages: value.stages.map(stage => ({
+            stage_name: stage.stage_name,
+            users: stage.users,
+            conversion_rate: stage.conversion_rate,
+          })),
+        }
+        return acc
+      }, {} as Record<string, any>),
+      segment_by: analytics.segment_by,
+    }
+  } else {
+    // Regular mode
+    return {
+      funnel_name: analytics.funnel_name,
+      date_range: analytics.date_range,
+      total_users: analytics.total_users,
+      completed_users: analytics.completed_users,
+      overall_conversion_rate: analytics.overall_conversion_rate,
+      stages: analytics.stages?.map(stage => ({
+        stage_name: stage.stage_name,
+        users: stage.users,
+        conversion_rate: stage.conversion_rate,
+        drop_off_rate: stage.drop_off_rate,
+      })),
+    }
   }
 }
 
@@ -153,14 +206,26 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Dashboard</h1>
+    <div className="min-h-screen" style={{ backgroundColor: '#F5F5F5' }}>
+      <div className="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8">
+        <div className="mb-8 pb-6 border-b" style={{ borderColor: '#E5E7EB' }}>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-4xl font-bold mb-3" style={{ color: '#111827' }}>Journey Overview</h1>
+              <p className="text-sm" style={{ color: '#6B7280' }}>Analyze inspiration-to-action journeys with segment-level insights</p>
+            </div>
+            {analytics && (
+              <div className="mt-2">
+                <ExportReportButton data={convertAnalyticsToReportData(analytics)} />
+              </div>
+            )}
+          </div>
+        </div>
 
-        {/* Funnel Selector */}
-        <div className="mb-6 p-4 bg-white rounded-lg shadow">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Select Funnel
+        {/* Journey Selector */}
+        <div className="mb-6 p-5 rounded-xl shadow-sm border border-gray-200" style={{ backgroundColor: '#FAFAFA' }}>
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Select Journey
           </label>
           <select
             value={selectedFunnelId || ''}
@@ -175,7 +240,7 @@ export default function Dashboard() {
             }}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           >
-            <option value="">-- Select a funnel --</option>
+            <option value="">-- Select a journey --</option>
             {funnels.map((funnel) => (
               <option key={funnel.id} value={funnel.id}>
                 {funnel.name}
@@ -186,8 +251,8 @@ export default function Dashboard() {
 
         {/* Date Range Selector */}
         {selectedFunnelId && (
-          <div className="mb-6 p-4 bg-white rounded-lg shadow">
-            <h3 className="text-sm font-medium text-gray-700 mb-4">Date Range</h3>
+          <div className="mb-6 p-5 bg-white rounded-xl shadow-sm border border-gray-200">
+            <h3 className="text-sm font-medium text-gray-900 mb-4">Date Range</h3>
             <div className="flex gap-4 items-center">
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Start Date</label>
@@ -218,8 +283,8 @@ export default function Dashboard() {
 
         {/* Segment Filters (Phase 2) */}
         {selectedFunnelId && (
-          <div className="mb-6 p-4 bg-white rounded-lg shadow">
-            <h3 className="text-sm font-medium text-gray-700 mb-4">Segment Filters (Pinterest DS)</h3>
+          <div className="mb-6 p-5 rounded-xl shadow-sm border border-gray-200" style={{ backgroundColor: '#FAFAFA' }}>
+            <h3 className="text-sm font-medium text-gray-900 mb-4">Segment Filters</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               {/* User Intent Filter */}
               <div>
@@ -394,10 +459,20 @@ export default function Dashboard() {
                   </div>
                 )}
 
+                {/* Segment Comparison Chart */}
+                {analytics.segments && Object.keys(analytics.segments).length > 0 && (
+                  <div className="p-6 rounded-xl shadow-sm border border-gray-200 mb-6" style={{ backgroundColor: '#FAFAFA' }}>
+                    <h2 className="text-lg font-semibold text-gray-900 mb-6">
+                      Segment Comparison Chart: {analytics.segment_by?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || ''}
+                    </h2>
+                    <SegmentComparisonChart segments={analytics.segments} />
+                  </div>
+                )}
+
                 {/* Segment Comparison */}
                 <div className="p-6 bg-white rounded-lg shadow">
                   <h2 className="text-xl font-semibold mb-4">
-                    Segment Breakdown: {analytics.segment_by.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    Segment Breakdown: {analytics.segment_by?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || ''}
                   </h2>
                   <div className="space-y-6">
                     {Object.entries(analytics.segments).map(([segmentValue, segmentData]) => (
@@ -409,6 +484,8 @@ export default function Dashboard() {
                           {segmentData.stages.map((stage, index) => {
                             const widthPercent = stage.conversion_rate
                             const isLast = index === segmentData.stages.length - 1
+                            const nextStage = !isLast ? segmentData.stages[index + 1] : null
+                            const dropOffRate = nextStage ? nextStage.drop_off_rate : 0
                             return (
                               <div key={stage.stage_order} className="relative">
                                 <div className="flex items-center gap-4 mb-2">
@@ -416,20 +493,29 @@ export default function Dashboard() {
                                     {stage.stage_name}
                                   </div>
                                   <div className="flex-1">
-                                    <div className="relative">
+                                    <div className="relative h-10">
                                       <div
-                                        className="h-10 bg-indigo-500 rounded transition-all"
-                                        style={{ width: `${widthPercent}%` }}
+                                        className="h-10 rounded transition-all absolute top-0 left-0"
+                                        style={{ width: `${widthPercent}%`, backgroundColor: '#E60023' }}
                                       />
-                                      <div className="absolute inset-0 flex items-center justify-center text-white font-semibold text-xs">
-                                        {stage.users.toLocaleString()} ({stage.conversion_rate.toFixed(1)}%)
-                                      </div>
+                                      {widthPercent >= 15 ? (
+                                        <div className="absolute inset-0 flex items-center justify-center text-white font-semibold text-xs z-10">
+                                          {stage.users.toLocaleString()} ({stage.conversion_rate.toFixed(1)}%)
+                                        </div>
+                                      ) : (
+                                        <div 
+                                          className="absolute top-0 left-0 flex items-center h-full text-gray-700 font-semibold text-xs z-10 whitespace-nowrap"
+                                          style={{ left: `${Math.max(widthPercent + 1, 0)}%`, paddingLeft: '8px' }}
+                                        >
+                                          {stage.users.toLocaleString()} ({stage.conversion_rate.toFixed(1)}%)
+                                        </div>
+                                      )}
                                     </div>
                                   </div>
                                 </div>
                                 {!isLast && (
                                   <div className="ml-32 text-xs text-red-600 mb-2">
-                                    ↓ {stage.drop_off_rate.toFixed(1)}% drop-off
+                                    ↓ {dropOffRate.toFixed(1)}% drop-off
                                   </div>
                                 )}
                               </div>
@@ -442,8 +528,11 @@ export default function Dashboard() {
                 </div>
 
                 {/* Segment Comparison Table */}
-                <div className="p-6 bg-white rounded-lg shadow">
-                  <h2 className="text-xl font-semibold mb-4">Segment Comparison</h2>
+                <div className="p-6 bg-white rounded-xl shadow-lg border border-gray-100">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                    <span className="w-1 h-8 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full mr-3"></span>
+                    Segment Comparison
+                  </h2>
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
@@ -480,22 +569,22 @@ export default function Dashboard() {
               /* Regular Aggregate View */
               <>
                 {/* Summary Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="p-6 bg-white rounded-lg shadow">
-                    <p className="text-sm text-gray-500">Total Users</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="p-5 bg-white rounded-xl shadow-sm border border-gray-200">
+                    <p className="text-sm font-medium text-gray-600">Total Users</p>
+                    <p className="text-2xl font-semibold text-gray-900 mt-2">
                       {(analytics.total_users || 0).toLocaleString()}
                     </p>
                   </div>
-                  <div className="p-6 bg-white rounded-lg shadow">
-                    <p className="text-sm text-gray-500">Completed Users</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">
+                  <div className="p-5 bg-white rounded-xl shadow-sm border border-gray-200">
+                    <p className="text-sm font-medium text-gray-600">Completed Users</p>
+                    <p className="text-2xl font-semibold text-gray-900 mt-2">
                       {(analytics.completed_users || 0).toLocaleString()}
                     </p>
                   </div>
-                  <div className="p-6 bg-white rounded-lg shadow">
-                    <p className="text-sm text-gray-500">Overall Conversion Rate</p>
-                    <p className="text-3xl font-bold text-indigo-600 mt-2">
+                  <div className="p-5 bg-white rounded-xl shadow-sm border border-gray-200">
+                    <p className="text-sm font-medium text-gray-600">Overall Conversion Rate</p>
+                    <p className="text-2xl font-semibold mt-2" style={{ color: '#E60023' }}>
                       {(analytics.overall_conversion_rate || 0).toFixed(2)}%
                     </p>
                   </div>
@@ -504,12 +593,21 @@ export default function Dashboard() {
                 {/* Funnel Visualization */}
                 {analytics.stages && analytics.stages.length > 0 && (
                   <>
-                    <div className="p-6 bg-white rounded-lg shadow">
-                      <h2 className="text-xl font-semibold mb-4">Funnel Stages</h2>
+                    {/* Chart Visualization */}
+                    <div className="p-6 rounded-xl shadow-sm border border-gray-200 mb-6" style={{ backgroundColor: '#FAFAFA' }}>
+                      <h2 className="text-lg font-semibold text-gray-900 mb-6">Journey Performance Chart</h2>
+                      <FunnelBarChart stages={analytics.stages} />
+                    </div>
+
+                    {/* Stage-by-Stage Breakdown */}
+                    <div className="p-6 rounded-xl shadow-sm border border-gray-200" style={{ backgroundColor: '#FAFAFA' }}>
+                      <h2 className="text-lg font-semibold text-gray-900 mb-6">Journey Stages</h2>
                       <div className="space-y-4">
                         {analytics.stages.map((stage, index) => {
                           const widthPercent = stage.conversion_rate
                           const isLast = index === analytics.stages!.length - 1
+                          const nextStage = !isLast ? analytics.stages![index + 1] : null
+                          const dropOffRate = nextStage ? nextStage.drop_off_rate : 0
                           return (
                             <div key={stage.stage_order} className="relative">
                               <div className="flex items-center gap-4 mb-2">
@@ -517,20 +615,29 @@ export default function Dashboard() {
                                   {stage.stage_name}
                                 </div>
                                 <div className="flex-1">
-                                  <div className="relative">
+                                  <div className="relative h-12">
                                     <div
-                                      className="h-12 bg-indigo-500 rounded transition-all"
+                                      className="h-12 bg-indigo-600 rounded transition-all absolute top-0 left-0"
                                       style={{ width: `${widthPercent}%` }}
                                     />
-                                    <div className="absolute inset-0 flex items-center justify-center text-white font-semibold">
-                                      {stage.users.toLocaleString()} users ({stage.conversion_rate.toFixed(1)}%)
-                                    </div>
+                                    {widthPercent >= 15 ? (
+                                      <div className="absolute inset-0 flex items-center justify-center text-white font-semibold z-10">
+                                        {stage.users.toLocaleString()} users ({stage.conversion_rate.toFixed(1)}%)
+                                      </div>
+                                    ) : (
+                                      <div 
+                                        className="absolute top-0 left-0 flex items-center h-full text-gray-700 font-semibold z-10 whitespace-nowrap"
+                                        style={{ left: `${Math.max(widthPercent + 1, 0)}%`, paddingLeft: '8px' }}
+                                      >
+                                        {stage.users.toLocaleString()} users ({stage.conversion_rate.toFixed(1)}%)
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               </div>
                               {!isLast && (
                                 <div className="ml-32 text-xs text-red-600 mb-2">
-                                  ↓ {stage.drop_off_rate.toFixed(1)}% drop-off
+                                  ↓ {dropOffRate.toFixed(1)}% drop-off
                                 </div>
                               )}
                             </div>
@@ -585,7 +692,7 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="text-center py-12 bg-white rounded-lg shadow">
-            <p className="text-gray-500">Please select a funnel to view analytics.</p>
+            <p className="text-gray-500">Please select a journey to view analytics.</p>
           </div>
         )}
       </div>

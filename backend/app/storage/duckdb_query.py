@@ -42,6 +42,37 @@ class DuckDBQuery:
 
         return files
 
+    def get_available_event_types(self, project_id: str) -> List[str]:
+        """Get list of distinct event types from all Parquet files for a project."""
+        try:
+            # Get all Parquet files in the events directory recursively
+            events_dir = self.events_dir / f"project_{project_id}"
+            if not events_dir.exists():
+                return []
+            
+            # Find all Parquet files recursively (year/month subdirectories)
+            parquet_files = list(events_dir.rglob("*.parquet"))
+            if not parquet_files:
+                return []
+            
+            # Build file list string for DuckDB
+            files_list = [f"'{str(f.absolute())}'" for f in parquet_files]
+            files_str = f"[{', '.join(files_list)}]"
+            
+            # Query distinct event types
+            query = f"""
+            SELECT DISTINCT event_type
+            FROM read_parquet({files_str})
+            ORDER BY event_type
+            """
+            
+            result = self.conn.execute(query).fetchall()
+            return [row[0] for row in result]
+            
+        except Exception as e:
+            print(f"Error getting event types: {e}")
+            return []
+
     def calculate_funnel_metrics(
         self,
         funnel_id: str,
@@ -144,11 +175,15 @@ class DuckDBQuery:
             total_df = df[["user_id", "event_type", "created_at"]].copy()
             total_result = self._calculate_stage_counts(total_df, stages)
             
-            # Calculate per-segment metrics
+            # Calculate per-segment metrics (exclude "Unknown" and empty segments)
             for segment_value in df[group_by_col].dropna().unique():
+                segment_str = str(segment_value).strip()
+                # Skip "Unknown" segments and empty strings
+                if segment_str == "Unknown" or segment_str == "" or segment_str == "None":
+                    continue
                 segment_df = df[df[group_by_col] == segment_value][["user_id", "event_type", "created_at"]].copy()
                 segment_metrics = self._calculate_stage_counts(segment_df, stages)
-                segments_result[str(segment_value)] = segment_metrics
+                segments_result[segment_str] = segment_metrics
             
             return {
                 "segments": segments_result,

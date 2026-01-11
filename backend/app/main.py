@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.background_tasks import background_manager
-from app.api.v1 import projects, funnels, track, analytics
+from app.api.v1 import projects, funnels, track, analytics, events, events
 
 
 @asynccontextmanager
@@ -64,6 +64,7 @@ app.include_router(projects.router, prefix="/api/v1/projects", tags=["projects"]
 app.include_router(funnels.router, prefix="/api/v1/funnels", tags=["funnels"])
 app.include_router(track.router, prefix="/api/v1/track", tags=["tracking"])
 app.include_router(analytics.router, prefix="/api/v1/analytics", tags=["analytics"])
+app.include_router(events.router, prefix="/api/v1/events", tags=["events"])
 
 
 @app.get("/")

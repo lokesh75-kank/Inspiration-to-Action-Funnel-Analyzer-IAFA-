@@ -60,6 +60,42 @@ You'll be automatically redirected to the Journey Overview (Dashboard).
 
 ---
 
+## 🎯 Pre-populate Sample Data (Optional - Recommended for Demo)
+
+**Before creating journeys, you can pre-populate sample data to see the tool in action.**
+
+**Step 1: Pre-populate Data (Run Once)**
+
+**Terminal - Backend Directory:**
+```bash
+cd backend
+source venv/bin/activate
+python populate_sample_data.py
+```
+
+**Expected Output:**
+```
+✅ Generated 420 events
+📊 Event Summary:
+   - pin_view: 200 events (100 Planners + 100 Actors)
+   - save: 100 events (60 Planners + 40 Actors)
+   - click: 80 events (30 Planners + 50 Actors)
+   - purchase: 40 events (15 Planners + 25 Actors)
+🎯 Available Event Types: pin_view, save, click, purchase
+✅ Sample data pre-populated successfully!
+```
+
+**Benefits:**
+- ✅ Data already exists - no need to generate events during demo
+- ✅ UI shows available events - dropdown with event types from data
+- ✅ Focus on analytics - more time for insights and decision-making
+- ✅ Predictable results - consistent metrics for demo
+- ✅ Multiple journey options - create different journeys with same data
+
+**See `PREPARE_DEMO.md` for detailed instructions.**
+
+---
+
 ## 📋 Main Features
 
 ### 1. **Projects** - Manage Product Initiatives & Experiment Scope
@@ -105,18 +141,25 @@ You'll be automatically redirected to the Journey Overview (Dashboard).
 
 **Create a Journey:**
 1. Navigate to **Journeys** page (formerly "Funnels")
-2. Click "Create Journey"
-3. Fill in:
+2. Verify the **Project** shown at the top is your selected project
+   - If not, go to **Projects** page first and click on a project to select it
+3. Click "Create Journey"
+4. Fill in:
    - **Journey Name**: e.g., "Pin Discovery to Action", "Save-to-Click Journey", "Shopping Inspiration Flow"
    - **Description** (optional): e.g., "Track users from Pin View through planning to action"
-   - **Project**: Select your project (e.g., "Home Feed Ranking Refresh", "Search Relevance Update", "Shopping Surface Experiment")
-     - Projects represent product initiatives or experiment scope
    - **Stages**: Define up to 5 stages representing the inspiration-to-action journey
      - For each stage:
        - **Stage Name**: e.g., "Pin View", "Save", "Click", "Purchase"
-       - **Event Type**: e.g., "pin_view", "save", "click", "purchase"
+       - **Event Type**: **Select from dropdown** (shows available event types from your data)
+         - If data is pre-populated, you'll see a dropdown with available event types (e.g., `pin_view`, `save`, `click`, `purchase`)
+         - If no data exists yet, you'll see a text input (allows any event type)
        - **Order**: 1, 2, 3, 4, 5 (represents progression: discovery → planning → action)
-4. Click "Create Journey"
+5. Click "Create Journey"
+
+**Note**: 
+- The journey is automatically associated with the current project shown at the top
+- Event Type dropdown ensures you only use event types that exist in your data (ensures journeys have data to analyze)
+- This helps focus on analysis rather than data collection
 
 **Example Journey:**
 ```
@@ -344,60 +387,39 @@ Example tracking code:
 
 ## 🎯 Common Use Cases
 
-### Use Case 1: Track Pinterest-Style Inspiration Journey
+### Use Case 1: Analyze Pinterest-Style Inspiration Journey
 
-**Scenario**: Track users from Pin View → Save → Click → Purchase for a Home Feed ranking experiment
+**Scenario**: Analyze users from Pin View → Save → Click → Purchase for a Home Feed ranking experiment
 
 **Steps:**
-1. **Create Project** (if not exists):
+1. **Pre-populate Data** (if not already done):
+   ```bash
+   cd backend
+   source venv/bin/activate
+   python populate_sample_data.py
+   ```
+   This creates sample events: `pin_view`, `save`, `click`, `purchase` with Planner/Actor segments
+
+2. **Create Project** (if not exists):
    - Name: "Home Feed Ranking Refresh"
    - Product Surface: "Home Feed"
 
-2. **Create Journey**:
+3. **Create Journey**:
    - Name: "Pin Discovery to Action"
-   - Project: "Home Feed Ranking Refresh"
+   - Project: "Home Feed Ranking Refresh" (selected from Projects page)
    - Stages:
-     - Stage 1: Pin View (event_type: "pin_view") - Discovery/Inspiration
-     - Stage 2: Save (event_type: "save") - Planning/Intent Formation
-     - Stage 3: Click (event_type: "click") - Action Initiation
-     - Stage 4: Purchase (event_type: "purchase") - Action Completion
+     - Stage 1: Pin View (event_type: **select "pin_view" from dropdown**) - Discovery/Inspiration
+     - Stage 2: Save (event_type: **select "save" from dropdown**) - Planning/Intent Formation
+     - Stage 3: Click (event_type: **select "click" from dropdown**) - Action Initiation
+     - Stage 4: Purchase (event_type: **select "purchase" from dropdown**) - Action Completion
+   - **Note**: Event Type dropdown shows only available event types from your data
 
-3. **Track Events**:
-   ```javascript
-   // User views a pin
-   trackEvent('pin_view', 'user123', {
-     pin_id: 'pin789',
-     user_intent: 'Planner',
-     surface: 'Home'
-   });
-   
-   // User saves the pin (planning behavior)
-   trackEvent('save', 'user123', {
-     pin_id: 'pin789',
-     user_intent: 'Planner',
-     surface: 'Home'
-   });
-   
-   // User clicks through (action initiation)
-   trackEvent('click', 'user123', {
-     pin_id: 'pin789',
-     user_intent: 'Planner'
-   });
-   
-   // User makes purchase (action completion)
-   trackEvent('purchase', 'user123', {
-     order_id: 'order456',
-     amount: 29.99,
-     user_intent: 'Actor'
-   });
-   ```
-
-4. **View Analytics**:
-   - Go to Journey Overview
-   - Select project: "Home Feed Ranking Refresh"
-   - Select journey: "Pin Discovery to Action"
-   - Select date range
-   - See progression rates and natural attrition patterns
+4. **View Analytics** (data already exists from pre-population):
+   - Go to Journey Overview (Dashboard)
+   - Select Journey: "Pin Discovery to Action"
+   - Select Date Range: Last 7 days (or appropriate range)
+   - View progression rates and natural attrition patterns
+   - **Break Down By**: User Intent to see Planner vs Actor differences
 
 **Decision Enabled:**
 - Understand which stages show high natural attrition (expected behavior)
@@ -556,8 +578,10 @@ This decision prevents a global change that would improve short-term clicks at t
   - Frontend: `cd frontend && npm run dev`
 
 ### "No analytics data"
-- **Check**: Have you tracked any events?
-- **Fix**: Track events using the API or JavaScript tracking code (see Appendix)
+- **Check**: Have you pre-populated sample data or tracked events?
+- **Fix**: 
+  - For demo: Run `python populate_sample_data.py` to pre-populate sample data (see Quick Start section)
+  - For production: Track events using the API or JavaScript tracking code (see Appendix)
 
 ### "No journeys found"
 - **Check**: Have you created any journeys?
@@ -580,13 +604,13 @@ This decision prevents a global change that would improve short-term clicks at t
 
 ## 📚 Next Steps
 
-1. **Create Your First Journey**: Define your inspiration-to-action journey (3-5 stages)
-2. **Set Up Guardrails**: Configure guardrails to monitor content diversity, save ratios, and session depth
-3. **Track Events**: Start tracking user events with segment dimensions (user_intent, surface, tenure)
-4. **View Analytics**: Check your Journey Overview for insights on progression rates
-5. **Segment Analysis**: Use segment filters to understand heterogeneous user behavior
-6. **Evaluate Tradeoffs**: Compare short-term action metrics with long-term inspiration quality
-7. **Make Decisions**: Use insights to recommend ship/segment/rollback decisions with guardrail context
+1. **Pre-populate Sample Data** (recommended for demo): Run `python populate_sample_data.py` to generate sample events
+2. **Create Your First Journey**: Define your inspiration-to-action journey (3-5 stages) using available event types
+3. **View Analytics**: Check your Journey Overview for insights on progression rates
+4. **Segment Analysis**: Use segment filters and "Break Down By" to understand heterogeneous user behavior
+5. **Evaluate Tradeoffs**: Compare short-term action metrics with long-term inspiration quality
+6. **Make Decisions**: Use insights to recommend ship/segment/rollback decisions with guardrail context
+7. **Track Real Events** (for production): Use the API or JavaScript tracking code to track real user events (see Appendix)
 
 ---
 

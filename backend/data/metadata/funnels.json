@@ -1,3 +1,53 @@
 {
-  "funnels": []
+  "funnels": [
+    {
+      "id": "892c5672-62fa-4d05-8898-a6414f99bd53",
+      "project_id": "poc-project-001",
+      "organization_id": "poc-org",
+      "name": "Pin Discovery to Save",
+      "description": "Track users from Pin View through planning to Save - measures inspiration quality",
+      "stages": [
+        {
+          "order": 1,
+          "name": "Pin View",
+          "event_type": "pin_view"
+        },
+        {
+          "order": 2,
+          "name": "save",
+          "event_type": "save"
+        }
+      ],
+      "is_active": true,
+      "created_at": "2026-01-11T03:14:45.105631",
+      "updated_at": "2026-01-11T03:14:45.105648"
+    },
+    {
+      "id": "b4dc0e0a-105a-4ea2-b532-331c36d0d7b8",
+      "project_id": "poc-project-001",
+      "organization_id": "poc-org",
+      "name": "Pin Discovery to purchase",
+      "description": null,
+      "stages": [
+        {
+          "order": 1,
+          "name": "pin_view",
+          "event_type": "pin_view"
+        },
+        {
+          "order": 2,
+          "name": "save",
+          "event_type": "save"
+        },
+        {
+          "order": 3,
+          "name": "purchase",
+          "event_type": "purchase"
+        }
+      ],
+      "is_active": true,
+      "created_at": "2026-01-11T03:45:28.569185",
+      "updated_at": "2026-01-11T03:45:28.569217"
+    }
+  ]
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { funnelsApi } from '../services/api'
+import { funnelsApi, eventsApi } from '../services/api'
 import { useProjectStore } from '../store/projectStore'
 
 interface Funnel {
@@ -23,12 +23,25 @@ export default function Funnels() {
   const [stages, setStages] = useState<Array<{ order: number; name: string; event_type: string }>>([
     { order: 1, name: '', event_type: '' }
   ])
+  const [availableEventTypes, setAvailableEventTypes] = useState<string[]>([])
 
   useEffect(() => {
     if (currentProject) {
       loadFunnels()
+      loadAvailableEventTypes()
     }
   }, [currentProject])
+  
+  const loadAvailableEventTypes = async () => {
+    if (!currentProject) return
+    try {
+      const response = await eventsApi.getEventTypes(currentProject.id)
+      setAvailableEventTypes(response.data)
+    } catch (err) {
+      // If no data yet, use empty array (will allow any event type)
+      setAvailableEventTypes([])
+    }
+  }
 
   const loadFunnels = async () => {
     if (!currentProject) return
@@ -38,7 +51,7 @@ export default function Funnels() {
       const response = await funnelsApi.list(currentProject.id)
       setFunnels(response.data)
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to load funnels')
+      setError(err.response?.data?.detail || 'Failed to load journeys')
     } finally {
       setLoading(false)
     }
@@ -99,7 +112,7 @@ export default function Funnels() {
       setStages([{ order: 1, name: '', event_type: '' }])
       loadFunnels()
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to create funnel')
+      setError(err.response?.data?.detail || 'Failed to create journey')
     } finally {
       setLoading(false)
     }
@@ -119,18 +132,18 @@ export default function Funnels() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-6">
+    <div className="min-h-screen" style={{ backgroundColor: '#F5F5F5' }}>
+      <div className="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center mb-6 pb-6 border-b" style={{ borderColor: '#E5E7EB' }}>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Funnels</h1>
-            <p className="text-sm text-gray-500 mt-1">Project: {currentProject.name}</p>
+            <h1 className="text-4xl font-bold mb-3" style={{ color: '#111827' }}>Journeys</h1>
+            <p className="text-sm" style={{ color: '#6B7280' }}>Create and manage inspiration-to-action journeys</p>
           </div>
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
             className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
           >
-            {showCreateForm ? 'Cancel' : 'Create Funnel'}
+            {showCreateForm ? 'Cancel' : 'Create Journey'}
           </button>
         </div>
 
@@ -145,11 +158,11 @@ export default function Funnels() {
 
         {showCreateForm && (
           <div className="mb-6 p-6 bg-white rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Create New Funnel</h2>
+            <h2 className="text-xl font-semibold mb-4">Create New Journey</h2>
             <form onSubmit={handleCreateFunnel}>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Funnel Name
+                  Journey Name
                 </label>
                 <input
                   type="text"
@@ -157,7 +170,7 @@ export default function Funnels() {
                   value={funnelName}
                   onChange={(e) => setFunnelName(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="E-commerce Purchase Funnel"
+                  placeholder="Pin Discovery to Save"
                 />
               </div>
               <div className="mb-4">
@@ -175,7 +188,7 @@ export default function Funnels() {
               <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
                   <label className="block text-sm font-medium text-gray-700">
-                    Funnel Stages (max 5)
+                    Journey Stages (max 5)
                   </label>
                   <button
                     type="button"
@@ -209,14 +222,30 @@ export default function Funnels() {
                         className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                         placeholder="Stage Name (e.g., Page View)"
                       />
-                      <input
-                        type="text"
-                        required
-                        value={stage.event_type}
-                        onChange={(e) => handleStageChange(index, 'event_type', e.target.value)}
-                        className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                        placeholder="Event Type (e.g., page_view)"
-                      />
+                      {availableEventTypes.length > 0 ? (
+                        <select
+                          required
+                          value={stage.event_type}
+                          onChange={(e) => handleStageChange(index, 'event_type', e.target.value)}
+                          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        >
+                          <option value="">Select event type...</option>
+                          {availableEventTypes.map((eventType) => (
+                            <option key={eventType} value={eventType}>
+                              {eventType}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          required
+                          value={stage.event_type}
+                          onChange={(e) => handleStageChange(index, 'event_type', e.target.value)}
+                          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                          placeholder="Event Type (e.g., pin_view)"
+                        />
+                      )}
                     </div>
                   </div>
                 ))}
@@ -225,9 +254,12 @@ export default function Funnels() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50"
+                  className="px-4 py-2 text-white rounded-full font-semibold shadow-sm transition-all hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ backgroundColor: '#E60023' }}
+                  onMouseEnter={(e) => !loading && (e.currentTarget.style.backgroundColor = '#BD001F')}
+                  onMouseLeave={(e) => !loading && (e.currentTarget.style.backgroundColor = '#E60023')}
                 >
-                  {loading ? 'Creating...' : 'Create Funnel'}
+                    {loading ? 'Creating...' : 'Create Journey'}
                 </button>
                 <button
                   type="button"
@@ -248,11 +280,11 @@ export default function Funnels() {
 
         {loading && !funnels.length ? (
           <div className="text-center py-12">
-            <p className="text-gray-500">Loading funnels...</p>
+            <p className="text-gray-500">Loading journeys...</p>
           </div>
         ) : funnels.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg shadow">
-            <p className="text-gray-500 mb-4">No funnels yet. Create your first funnel!</p>
+            <p className="text-gray-500 mb-4">No journeys yet. Create your first journey!</p>
           </div>
         ) : (
           <div className="grid gap-4">
@@ -293,7 +325,10 @@ export default function Funnels() {
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   <a
                     href={`/dashboard?funnel=${funnel.id}`}
-                    className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+                    className="text-sm font-semibold hover:underline"
+                    style={{ color: '#E60023' }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#BD001F'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = '#E60023'}
                   >
                     View Analytics →
                   </a>

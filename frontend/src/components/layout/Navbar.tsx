@@ -6,43 +6,36 @@ export default function Navbar() {
   const isActive = (path: string) => location.pathname === path
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200">
+    <nav className="border-b" style={{ backgroundColor: '#FFFFFF', borderColor: '#E5E7EB' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <h1 className="text-xl font-bold text-indigo-600">IAFA</h1>
+              <h1 className="text-xl font-bold" style={{ color: '#E60023' }}>
+                IAFA
+              </h1>
+              <span className="hidden md:inline ml-3 text-xs font-normal" style={{ color: '#6B7280' }}>Inspiration-to-Action Funnel Analyzer</span>
             </div>
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+            <div className="hidden sm:ml-12 sm:flex sm:space-x-8 sm:items-center">
               <Link
                 to="/dashboard"
-                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-semibold transition-colors duration-150 ${
                   isActive('/dashboard')
-                    ? 'border-indigo-500 text-gray-900'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'text-black border-black'
+                    : 'text-gray-600 hover:text-black border-transparent'
                 }`}
               >
-                Dashboard
-              </Link>
-              <Link
-                to="/projects"
-                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                  isActive('/projects')
-                    ? 'border-indigo-500 text-gray-900'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Projects
+                Journey Overview
               </Link>
               <Link
                 to="/funnels"
-                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-semibold transition-colors duration-150 ${
                   isActive('/funnels')
-                    ? 'border-indigo-500 text-gray-900'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'text-black border-black'
+                    : 'text-gray-600 hover:text-black border-transparent'
                 }`}
               >
-                Funnels
+                Journeys
               </Link>
             </div>
           </div>
