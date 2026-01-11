@@ -90,11 +90,16 @@ Frontend should be running at: `http://localhost:5173` (or similar port)
 ### Recommended Free Platforms
 
 #### **Option A: Render.com** (Easiest, Recommended)
-- **Free tier**: 750 hours/month
+- **Free tier**: 750 hours/month (resets every month - enough for one service running 24/7)
+- **Important**: Free tier services automatically "spin down" after 15 minutes of inactivity
+  - When someone visits, it "spins up" in ~30 seconds (cold start)
+  - You only use hours when the service is actually running
+  - This means 750 hours can last much longer than one month!
 - Supports both backend (Python) and frontend (static)
 - Automatic HTTPS
 - Custom domain support
-- **Best for**: Full-stack deployment
+- **Best for**: Full-stack deployment, demos, portfolios
+- **What happens after 750 hours?**: The limit resets every month. Plus, with auto spin-down, you rarely hit the limit!
 
 #### **Option B: Railway.app**
 - **Free tier**: $5 credit/month
@@ -376,6 +381,44 @@ allow_origins=["*"]  # Allows all origins (only for demos!)
 # Just push to GitHub, Render/Railway auto-deploys!
 git push
 ```
+
+---
+
+## ❓ FAQ: Render.com Free Tier
+
+### Q: What does "750 hours/month" actually mean?
+**A**: 
+- You get 750 hours of service runtime per month
+- This resets every month (not a one-time limit!)
+- In a 31-day month, there are 744 hours (31 × 24)
+- So 750 hours = enough for one service to run 24/7 for the entire month
+
+### Q: What happens after 750 hours are used?
+**A**: 
+- The limit **resets every month** - you get 750 hours again!
+- Most users never hit the limit because:
+  - Free tier services automatically "spin down" after 15 minutes of inactivity
+  - They only use hours when actually running (when someone visits)
+  - For a demo/portfolio site with occasional traffic, 750 hours can last months!
+
+### Q: What happens when a free service "spins down"?
+**A**: 
+- After 15 minutes of no traffic, the service stops running
+- When someone visits, it automatically "spins up" in ~30 seconds (cold start)
+- This saves hours - you only pay for active runtime!
+
+### Q: Is the free tier good for demos/portfolios?
+**A**: 
+- **Yes, absolutely!** 
+- Perfect for demo sites, portfolios, and interview projects
+- The auto spin-down means low-traffic sites use very few hours
+- 750 hours/month is more than enough for occasional access
+
+### Q: What if I need guaranteed uptime (always on)?
+**A**: 
+- Free tier is not for production apps that need 100% uptime
+- For production, consider Render's paid tier ($7/month for always-on)
+- For demos/interviews/portfolios, free tier is perfect!
 
 ---
 
