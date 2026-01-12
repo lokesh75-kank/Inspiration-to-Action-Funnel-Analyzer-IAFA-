@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { funnelsApi, eventsApi } from '../services/api'
 import { useProjectStore } from '../store/projectStore'
 
@@ -323,15 +324,15 @@ export default function Funnels() {
                   </div>
                 </div>
                 <div className="mt-4 pt-4 border-t border-gray-200">
-                  <a
-                    href={`/dashboard?funnel=${funnel.id}`}
-                    className="text-sm font-semibold hover:underline"
+                  <Link
+                    to={`/dashboard?funnel=${funnel.id}`}
+                    className="text-sm font-semibold hover:underline inline-block"
                     style={{ color: '#E60023' }}
                     onMouseEnter={(e) => e.currentTarget.style.color = '#BD001F'}
                     onMouseLeave={(e) => e.currentTarget.style.color = '#E60023'}
                   >
                     View Analytics →
-                  </a>
+                  </Link>
                 </div>
               </div>
             ))}

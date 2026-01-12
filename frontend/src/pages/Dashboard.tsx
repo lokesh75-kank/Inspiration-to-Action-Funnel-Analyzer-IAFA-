@@ -123,6 +123,14 @@ export default function Dashboard() {
     }
   }, [currentProject, fetchProjects])
 
+  // Update selectedFunnelId when URL parameter changes
+  useEffect(() => {
+    const funnelParam = searchParams.get('funnel')
+    if (funnelParam && funnelParam !== selectedFunnelId) {
+      setSelectedFunnelId(funnelParam)
+    }
+  }, [searchParams, selectedFunnelId])
+
   useEffect(() => {
     if (currentProject) {
       loadFunnels()
@@ -457,7 +465,7 @@ export default function Dashboard() {
                       </p>
                     </div>
                     <div className="p-6 bg-white rounded-lg shadow">
-                      <p className="text-sm text-gray-500">Overall Conversion Rate</p>
+                      <p className="text-sm text-gray-500">Overall Progression Rate</p>
                       <p className="text-3xl font-bold text-indigo-600 mt-2">
                         {analytics.total.overall_conversion_rate.toFixed(2)}%
                       </p>
@@ -489,7 +497,7 @@ export default function Dashboard() {
                     {Object.entries(analytics.segments).map(([segmentValue, segmentData]) => (
                       <div key={segmentValue} className="border border-gray-200 rounded-lg p-4">
                         <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                          {segmentValue} ({segmentData.total_users} users, {segmentData.overall_conversion_rate.toFixed(2)}% conversion)
+                          {segmentValue} ({segmentData.total_users} users, {segmentData.overall_conversion_rate.toFixed(2)}% progression)
                         </h3>
                         
                         {/* Chart Switcher for this segment */}
@@ -566,7 +574,7 @@ export default function Dashboard() {
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Segment</th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Users</th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Completed</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Conversion Rate</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Progression Rate</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
@@ -609,7 +617,7 @@ export default function Dashboard() {
                     </p>
                   </div>
                   <div className="p-5 bg-white rounded-xl shadow-sm border border-gray-200">
-                    <p className="text-sm font-medium text-gray-600">Overall Conversion Rate</p>
+                    <p className="text-sm font-medium text-gray-600">Overall Progression Rate</p>
                     <p className="text-2xl font-semibold mt-2" style={{ color: '#E60023' }}>
                       {(analytics.overall_conversion_rate || 0).toFixed(2)}%
                     </p>
@@ -699,7 +707,7 @@ export default function Dashboard() {
                             <tr>
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stage</th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Users</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Conversion Rate</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Progression Rate</th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Drop-off Rate</th>
                             </tr>
                           </thead>

@@ -38,7 +38,7 @@ export default function SegmentComparisonChart({ segments }: SegmentComparisonCh
         />
         <YAxis 
           tick={{ fill: '#6B7280', fontSize: 12 }}
-          label={{ value: 'Conversion Rate (%)', angle: -90, position: 'insideLeft', style: { fill: '#6B7280' } }}
+          label={{ value: 'Progression Rate (%)', angle: -90, position: 'insideLeft', style: { fill: '#6B7280' } }}
         />
         <Tooltip
           contentStyle={{
@@ -46,7 +46,7 @@ export default function SegmentComparisonChart({ segments }: SegmentComparisonCh
             border: '1px solid #E5E7EB',
             borderRadius: '8px',
           }}
-          formatter={(value: number) => [`${value.toFixed(1)}%`, 'Conversion Rate']}
+          formatter={(value: number) => [`${value.toFixed(1)}%`, 'Progression Rate']}
         />
         <Legend />
         <Bar dataKey="conversionRate" radius={[4, 4, 0, 0]}>

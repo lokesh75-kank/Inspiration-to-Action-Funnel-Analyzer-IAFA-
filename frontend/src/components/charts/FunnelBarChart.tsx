@@ -45,7 +45,7 @@ export default function FunnelBarChart({ stages }: FunnelBarChartProps) {
           }}
           formatter={(value: number, name: string) => {
             if (name === 'users') return [value.toLocaleString(), 'Users']
-            if (name === 'conversionRate') return [`${value.toFixed(1)}%`, 'Conversion Rate']
+            if (name === 'conversionRate') return [`${value.toFixed(1)}%`, 'Progression Rate']
             return [value, name]
           }}
         />
@@ -53,7 +53,7 @@ export default function FunnelBarChart({ stages }: FunnelBarChartProps) {
           wrapperStyle={{ paddingTop: '20px' }}
           formatter={(value) => {
             if (value === 'users') return 'Users'
-            if (value === 'conversionRate') return 'Conversion Rate'
+            if (value === 'conversionRate') return 'Progression Rate'
             return value
           }}
         />
